@@ -1,0 +1,2 @@
+Create User:
+curl -H "Content-Type: application/json" -X POST -d ' {"username": "user1", "about": "hello im user1", "isAnonymous": false, "name": "John", "email": "example@mail.ru"}' http://127.0.0.1:5000/db/api/user/create
