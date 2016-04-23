@@ -118,7 +118,7 @@ def details():
                 return e
 
         return json.dumps({
-            'code': 1,
+            'code': 0,
             'response': {
                 'about': response[0]['about'],
                 'email': response[0]['email'],
