@@ -3,6 +3,7 @@ from views.user import user
 from views.post import post
 from views.main import main
 from views.forum import forum
+from views.thread import thread
 
 
 app = Flask(__name__)
@@ -13,7 +14,8 @@ API = '/db/api'
 app.register_blueprint(user, url_prefix=API+'/user')
 app.register_blueprint(post, url_prefix=API+'/post')
 app.register_blueprint(main, url_prefix=API)
-app.register_blueprint(post, url_prefix=API+'/forum')
+app.register_blueprint(forum, url_prefix=API+'/forum')
+app.register_blueprint(thread, url_prefix=API+'/thread')
 
 
 
