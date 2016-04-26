@@ -1,3 +1,4 @@
+USER
 Create User:
 curl -H "Content-Type: application/json" -X POST -d ' {"username": "user1", "about": "hello im user1", "isAnonymous": false, "name": "John", "email": "example@mail.ru"}' http://127.0.0.1:5000/db/api/user/create/
 Details:
@@ -6,7 +7,11 @@ Follow:
 curl -H "Content-Type: application/json" -X POST -d ' {"follower": "easdfxa7868mze@ma.rzxcv", "followee": "easdfxa7868mze@ma.rzxcv"}' http://127.0.0.1:5000/db/api/user/follow/
 listFollowers:
 http://127.0.0.1:5000/db/api/user/listFollowers/?user=easdfxa7868mze@ma.rzxcv&order=asc
-listFollowing
+listFollowing:
 http://127.0.0.1:5000/db/api/user/listFollowing/?user=eugene@mail.ru
-listPosts
-http://127.0.0.1:5000/eugene@mail.ru
+listPosts:
+http://127.0.0.1:5000/db/api/user/listPosts/?user=eugene@mail.ru
+========================================
+POST
+List:
+http://127.0.0.1:5000/db/api/post/list/?forum=progs

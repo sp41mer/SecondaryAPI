@@ -1,4 +1,7 @@
 __author__ = 'sp41mer'
+# listPosts
+# listThreads
+# listUsers
 from flask import Blueprint, request
 from flask.ext.mysql import MySQL
 import MySQLdb
@@ -161,3 +164,4 @@ def details():
                 'code': 2,
                 'response': 'Error'
             })
+

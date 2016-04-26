@@ -1,4 +1,12 @@
 __author__ = 'sp41mer'
+# create
+# details
+# list
+# listPosts
+# remove
+# restore
+# update
+# vote
 from flask import Blueprint, request
 from flask.ext.mysql import MySQL
 import MySQLdb

@@ -132,6 +132,8 @@ def create():
         else:
             response[0]['isSpam'] = 'true'
 
+        response[0]['date'] = str(response[0]['date'])
+
         connection.close()
 
         return json.dumps({
@@ -236,6 +238,8 @@ def update():
         else:
             response[0]['isSpam'] = 'true'
 
+        response[0]['date'] = str(response[0]['date'])
+
         connection.close()
 
         return json.dumps({
@@ -316,6 +320,8 @@ def vote():
         else:
             response[0]['isSpam'] = 'true'
 
+        response[0]['date'] = str(response[0]['date'])
+
         connection.close()
 
         return json.dumps({
@@ -391,6 +397,8 @@ def details():
         else:
             response[0]['isSpam'] = 'true'
 
+        response[0]['date'] = str(response[0]['date'])
+
         connection.close()
 
         return json.dumps({
@@ -415,3 +423,235 @@ def details():
             'code': 2,
             'response': 'Invalid request'
             })
+
+
+@post.route("/list/", methods=['GET'])
+def list_posts():
+
+    forum = request.args.get("forum", type=str, default=None)
+    thread = request.args.get("thread", type=int, default=None)
+
+    since = request.args.get("since", type=str, default=None)
+    limit = request.args.get("limit", type=int, default=None)
+    order = request.args.get("order", default='desc')
+
+    if limit:
+        trueLimit = 'LIMIT '+limit
+    else:
+        trueLimit = ''
+
+    if order != 'asc' and order != 'desc':
+        return json.dumps({
+                'code': 3,
+                'response': 'Error'
+            })
+
+    if since:
+        trueSince = ' and date >='+since
+    else:
+        trueSince = ''
+
+
+    if thread:
+
+        try:
+            cursor.execute(''' select * from Post p where p.thread='{}' {} order by p.date {} {} '''.format(thread, trueSince, order, trueLimit))
+        except (MySQLdb.Error, MySQLdb.Warning):
+            connection.close()
+            return json.dumps({
+                'code': 1,
+                'response': 'Error'
+            })
+
+        response = dictfetchall(cursor)
+        responseArrayToJson = []
+
+        connection.close()
+
+        for eachPost in response:
+            if eachPost['isApproved'] == 0:
+                eachPost['isApproved'] = 'false'
+            else:
+                eachPost['isApproved'] = 'true'
+
+            if eachPost['isDeleted'] == 0:
+                eachPost['isDeleted'] = 'false'
+            else:
+                eachPost['isDeleted'] = 'true'
+
+            if eachPost['isEdited'] == 0:
+                eachPost['isEdited'] = 'false'
+            else:
+                eachPost['isEdited'] = 'true'
+
+            if eachPost['isHighlighted'] == 0:
+                eachPost['isHighlighted'] = 'false'
+            else:
+                eachPost['isHighlighted'] = 'true'
+
+            if eachPost['isSpam'] == 0:
+                eachPost['isSpam'] = 'false'
+            else:
+                eachPost['isSpam'] = 'true'
+            eachPost['date'] = str(eachPost['date'])
+
+            responseArrayToJson.append({
+                "date": eachPost['date'],
+                "dislikes": eachPost['dislikes'],
+                "forum": eachPost['forum'],
+                "id": eachPost['id'],
+                "isApproved": eachPost['isApproved'],
+                "isDeleted": eachPost['isDeleted'],
+                "isEdited": eachPost['isEdited'],
+                "isHighlighted": eachPost['isHighlighted'],
+                "isSpam": eachPost['isSpam'],
+                "likes": eachPost['likes'],
+                "message": eachPost['message'],
+                "parent": eachPost['parent'],
+                "points": eachPost['points'],
+                "thread": eachPost['thread'],
+                "user": eachPost['user']
+            })
+
+        return json.dumps({
+                'code': 0,
+                'response': responseArrayToJson
+            })
+
+    elif forum:
+
+        try:
+            cursor.execute(''' select * from Post p where p.forum='{}' {} order by p.date {} {} '''.format(forum, trueSince, order, trueLimit))
+        except (MySQLdb.Error, MySQLdb.Warning):
+            connection.close()
+            return json.dumps({
+                'code': 1,
+                'response': 'Error'
+            })
+
+        response = dictfetchall(cursor)
+        responseArrayToJson = []
+
+        connection.close()
+
+        for eachPost in response:
+            if eachPost['isApproved'] == 0:
+                eachPost['isApproved'] = 'false'
+            else:
+                eachPost['isApproved'] = 'true'
+
+            if eachPost['isDeleted'] == 0:
+                eachPost['isDeleted'] = 'false'
+            else:
+                eachPost['isDeleted'] = 'true'
+
+            if eachPost['isEdited'] == 0:
+                eachPost['isEdited'] = 'false'
+            else:
+                eachPost['isEdited'] = 'true'
+
+            if eachPost['isHighlighted'] == 0:
+                eachPost['isHighlighted'] = 'false'
+            else:
+                eachPost['isHighlighted'] = 'true'
+
+            if eachPost['isSpam'] == 0:
+                eachPost['isSpam'] = 'false'
+            else:
+                eachPost['isSpam'] = 'true'
+            eachPost['date'] = str(eachPost['date'])
+
+            responseArrayToJson.append({
+                "date": eachPost['date'],
+                "dislikes": eachPost['dislikes'],
+                "forum": eachPost['forum'],
+                "id": eachPost['id'],
+                "isApproved": eachPost['isApproved'],
+                "isDeleted": eachPost['isDeleted'],
+                "isEdited": eachPost['isEdited'],
+                "isHighlighted": eachPost['isHighlighted'],
+                "isSpam": eachPost['isSpam'],
+                "likes": eachPost['likes'],
+                "message": eachPost['message'],
+                "parent": eachPost['parent'],
+                "points": eachPost['points'],
+                "thread": eachPost['thread'],
+                "user": eachPost['user']
+            })
+
+        return json.dumps({
+                'code': 0,
+                'response': responseArrayToJson
+            })
+
+    elif forum and thread:
+
+        try:
+            cursor.execute(''' select * from Post p where p.thread='{}' and p.forum='{}' {} order by t.date {} {} '''.format(thread, forum, trueSince, order, trueLimit))
+        except (MySQLdb.Error, MySQLdb.Warning):
+            connection.close()
+            return json.dumps({
+                'code': 1,
+                'response': 'Error'
+            })
+
+        response = dictfetchall(cursor)
+        responseArrayToJson = []
+
+        connection.close()
+
+        for eachPost in response:
+            if eachPost['isApproved'] == 0:
+                eachPost['isApproved'] = 'false'
+            else:
+                eachPost['isApproved'] = 'true'
+
+            if eachPost['isDeleted'] == 0:
+                eachPost['isDeleted'] = 'false'
+            else:
+                eachPost['isDeleted'] = 'true'
+
+            if eachPost['isEdited'] == 0:
+                eachPost['isEdited'] = 'false'
+            else:
+                eachPost['isEdited'] = 'true'
+
+            if eachPost['isHighlighted'] == 0:
+                eachPost['isHighlighted'] = 'false'
+            else:
+                eachPost['isHighlighted'] = 'true'
+
+            if eachPost['isSpam'] == 0:
+                eachPost['isSpam'] = 'false'
+            else:
+                eachPost['isSpam'] = 'true'
+            eachPost['date'] = str(eachPost['date'])
+
+            responseArrayToJson.append({
+                "date": eachPost['date'],
+                "dislikes": eachPost['dislikes'],
+                "forum": eachPost['forum'],
+                "id": eachPost['id'],
+                "isApproved": eachPost['isApproved'],
+                "isDeleted": eachPost['isDeleted'],
+                "isEdited": eachPost['isEdited'],
+                "isHighlighted": eachPost['isHighlighted'],
+                "isSpam": eachPost['isSpam'],
+                "likes": eachPost['likes'],
+                "message": eachPost['message'],
+                "parent": eachPost['parent'],
+                "points": eachPost['points'],
+                "thread": eachPost['thread'],
+                "user": eachPost['user']
+            })
+
+        return json.dumps({
+                'code': 0,
+                'response': responseArrayToJson
+            })
+    else:
+        return json.dumps({
+                'code': 2,
+                'response': 'Invalid request'
+            })
+

@@ -116,6 +116,10 @@ def details():
         except (MySQLdb.Error, MySQLdb.Warning) as e:
                 connection.close()
                 return e
+        if response[0]['isAnonymous'] == 0:
+            response[0]['isAnonymous'] = 'false'
+        else:
+            response[0]['isAnonymous'] = 'true'
 
         return json.dumps({
             'code': 0,
@@ -189,6 +193,11 @@ def follow():
             'response': 'Not Found'
             })
 
+        if response[0]['isAnonymous'] == 0:
+            response[0]['isAnonymous'] = 'false'
+        else:
+            response[0]['isAnonymous'] = 'true'
+
         return json.dumps({
             'code': 1,
             'response': {
@@ -261,6 +270,11 @@ def updateProfile():
             'response': 'Not Found'
             })
 
+        if response[0]['isAnonymous'] == 0:
+            response[0]['isAnonymous'] = 'false'
+        else:
+            response[0]['isAnonymous'] = 'true'
+
         return json.dumps({
             'code': 1,
             'response': {
@@ -332,6 +346,11 @@ def unfollow():
             'code': 1,
             'response': 'Not Found'
             })
+
+        if response[0]['isAnonymous'] == 0:
+            response[0]['isAnonymous'] = 'false'
+        else:
+            response[0]['isAnonymous'] = 'true'
 
         return json.dumps({
             'code': 1,
@@ -420,6 +439,11 @@ def listFollowers():
             for sublist in threads:
                 for val in sublist:
                     true_threads.append(val)
+
+            if response[0]['isAnonymous'] == 0:
+                response[0]['isAnonymous'] = 'false'
+            else:
+                response[0]['isAnonymous'] = 'true'
 
             mainFollowers.append({
                 'about': response[0]['about'],
@@ -511,6 +535,11 @@ def list_following():
                 for val in sublist:
                     true_threads.append(val)
 
+            if response[0]['isAnonymous'] == 0:
+                response[0]['isAnonymous'] = 'false'
+            else:
+                response[0]['isAnonymous'] = 'true'
+
             mainFollowers.append({
                 'about': response[0]['about'],
                 'email': response[0]['email'],
@@ -573,9 +602,57 @@ def list_posts_users():
                 'response': 'Error'
             })
         response = dictfetchall(cursor)
+        responseArrayToJson = []
         connection.close()
+        for eachPost in response:
+            if eachPost['isApproved'] == 0:
+                eachPost['isApproved'] = 'false'
+            else:
+                eachPost['isApproved'] = 'true'
 
-        return json.dumps(response)
+            if eachPost['isDeleted'] == 0:
+                eachPost['isDeleted'] = 'false'
+            else:
+                eachPost['isDeleted'] = 'true'
+
+            if eachPost['isEdited'] == 0:
+                eachPost['isEdited'] = 'false'
+            else:
+                eachPost['isEdited'] = 'true'
+
+            if eachPost['isHighlighted'] == 0:
+                eachPost['isHighlighted'] = 'false'
+            else:
+                eachPost['isHighlighted'] = 'true'
+
+            if eachPost['isSpam'] == 0:
+                eachPost['isSpam'] = 'false'
+            else:
+                eachPost['isSpam'] = 'true'
+            eachPost['date'] = str(eachPost['date'])
+
+            responseArrayToJson.append({
+                "date": eachPost['date'],
+                "dislikes": eachPost['dislikes'],
+                "forum": eachPost['forum'],
+                "id": eachPost['id'],
+                "isApproved": eachPost['isApproved'],
+                "isDeleted": eachPost['isDeleted'],
+                "isEdited": eachPost['isEdited'],
+                "isHighlighted": eachPost['isHighlighted'],
+                "isSpam": eachPost['isSpam'],
+                "likes": eachPost['likes'],
+                "message": eachPost['message'],
+                "parent": eachPost['parent'],
+                "points": eachPost['points'],
+                "thread": eachPost['thread'],
+                "user": eachPost['user']
+            })
+
+        return json.dumps({
+                'code': 0,
+                'response': responseArrayToJson
+            })
 
     else:
         return json.dumps({
