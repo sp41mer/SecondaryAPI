@@ -354,3 +354,235 @@ def unfollow():
             'response': 'Invalid request'
         })
 
+
+@user.route("/listFollowers/", methods=['GET'])
+def listFollowers():
+
+    requestData = request.args.get("user", type=str, default=None)
+
+    if requestData:
+
+        limit = request.args.get("limit", type=int, default=None)
+
+        order = request.args.get("order", type=str, default='desc')
+
+        if limit:
+            trueLimit = 'LIMIT '+limit
+        else:
+            trueLimit = ''
+
+        if order != 'asc' and order != 'desc':
+            return json.dumps({
+                'code': 3,
+                'response': 'Error'
+            })
+
+        since_id = request.args.get('since_id', type=str, default=None)
+
+        if since_id:
+            trueSinceId = 'and u.id >='+since_id
+        else:
+            trueSinceId = ''
+
+        try:
+            cursor.execute(''' select * from Follow f join User u on f.follower = u.email where f.followee='{}' and u.id {} order by u.name {} {} '''.format(requestData, trueSinceId, order, trueLimit))
+        except (MySQLdb.Error, MySQLdb.Warning):
+            connection.close()
+            return json.dumps({
+                'code': 1,
+                'response': 'Error'
+            })
+
+        mainResponse = dictfetchall(cursor)
+        mainFollowers = []
+        for eachUser in mainResponse:
+            cursor.execute('''SELECT * FROM User WHERE email = '{}' '''.format(eachUser['follower']))
+
+            response = dictfetchall(cursor)
+
+            cursor.execute('''SELECT follower FROM Follow WHERE followee = '{}' '''.format(eachUser['follower']))
+            followers = cursor.fetchall()
+            true_followers = []
+            for sublist in followers:
+                for val in sublist:
+                    true_followers.append(val)
+
+            cursor.execute('''SELECT followee FROM Follow WHERE follower = '{}' '''.format(eachUser['follower']))
+            followees = cursor.fetchall()
+            true_followees = []
+            for sublist in followees:
+                for val in sublist:
+                    true_followees.append(val)
+
+            cursor.execute('''SELECT thread FROM Subscribe WHERE user = '{}' '''.format(eachUser['follower']))
+            threads = cursor.fetchall()
+            true_threads = []
+            for sublist in threads:
+                for val in sublist:
+                    true_threads.append(val)
+
+            mainFollowers.append({
+                'about': response[0]['about'],
+                'email': response[0]['email'],
+                'followers': true_followers,
+                'followees': true_followees,
+                'subscriptions': true_threads,
+                'id': response[0]['id'],
+                'isAnonymous': response[0]['isAnonymous'],
+                'name': response[0]['name'],
+                'username': response[0]['username']
+            })
+
+        connection.close()
+
+        return json.dumps({
+            'code': 0,
+            'response': mainFollowers
+        })
+    else:
+        json.dumps({
+            'code': 2,
+            'response': 'Invalid request'
+        })
+
+
+@user.route("/listFollowing/", methods=['GET'])
+def list_following():
+    requestData = request.args.get("user", type=str, default=None)
+
+    if requestData:
+
+        limit = request.args.get("limit", type=int, default=None)
+
+        order = request.args.get("order", type=str, default='desc')
+
+        if limit:
+            trueLimit = 'LIMIT '+limit
+        else:
+            trueLimit = ''
+
+        if order != 'asc' and order != 'desc':
+            return json.dumps({
+                'code': 3,
+                'response': 'Error'
+            })
+
+        since_id = request.args.get('since_id', type=str, default=None)
+
+        if since_id:
+            trueSinceId = 'and u.id >='+since_id
+        else:
+            trueSinceId = ''
+
+        try:
+            cursor.execute(''' select * from Follow f join User u on f.followee = u.email where f.follower='{}' and u.id {} order by u.name {} {} '''.format(requestData, trueSinceId, order, trueLimit))
+        except (MySQLdb.Error, MySQLdb.Warning):
+            connection.close()
+            return json.dumps({
+                'code': 1,
+                'response': 'Error'
+            })
+
+        mainResponse = dictfetchall(cursor)
+        mainFollowers = []
+        for eachUser in mainResponse:
+            cursor.execute('''SELECT * FROM User WHERE email = '{}' '''.format(eachUser['followee']))
+
+            response = dictfetchall(cursor)
+
+            cursor.execute('''SELECT follower FROM Follow WHERE followee = '{}' '''.format(eachUser['followee']))
+            followers = cursor.fetchall()
+            true_followers = []
+            for sublist in followers:
+                for val in sublist:
+                    true_followers.append(val)
+
+            cursor.execute('''SELECT followee FROM Follow WHERE follower = '{}' '''.format(eachUser['followee']))
+            followees = cursor.fetchall()
+            true_followees = []
+            for sublist in followees:
+                for val in sublist:
+                    true_followees.append(val)
+
+            cursor.execute('''SELECT thread FROM Subscribe WHERE user = '{}' '''.format(eachUser['followee']))
+            threads = cursor.fetchall()
+            true_threads = []
+            for sublist in threads:
+                for val in sublist:
+                    true_threads.append(val)
+
+            mainFollowers.append({
+                'about': response[0]['about'],
+                'email': response[0]['email'],
+                'followers': true_followers,
+                'followees': true_followees,
+                'subscriptions': true_threads,
+                'id': response[0]['id'],
+                'isAnonymous': response[0]['isAnonymous'],
+                'name': response[0]['name'],
+                'username': response[0]['username']
+            })
+
+        connection.close()
+
+        return json.dumps({
+            'code': 0,
+            'response': mainFollowers
+        })
+    else:
+        json.dumps({
+            'code': 2,
+            'response': 'Invalid request'
+        })
+
+@user.route("/listPosts/", methods=['GET'])
+def list_posts_users():
+
+    requestData = request.args.get("user", type=str, default=None)
+
+    if requestData:
+
+        limit = request.args.get("limit", type=int, default=None)
+
+        order = request.args.get("order", type=str, default='desc')
+
+        if limit:
+            trueLimit = 'LIMIT '+limit
+        else:
+            trueLimit = ''
+
+        if order != 'asc' and order != 'desc':
+            return json.dumps({
+                'code': 3,
+                'response': 'Error'
+            })
+
+        since_id = request.args.get('since_id', type=str, default=None)
+
+        if since_id:
+            trueSinceId = ' and u.id >='+since_id
+        else:
+            trueSinceId = ''
+
+        try:
+            cursor.execute(''' select * from Post p where p.user = '{}' {} order by p.date {} {} '''.format(requestData, trueSinceId , order, trueLimit))
+        except (MySQLdb.Error, MySQLdb.Warning):
+            connection.close()
+            return json.dumps({
+                'code': 1,
+                'response': 'Error'
+            })
+        response = dictfetchall(cursor)
+        connection.close()
+
+        return json.dumps(response)
+
+    else:
+        return json.dumps({
+                'code': 2,
+                'response': 'Error'
+            })
+
+
+
+

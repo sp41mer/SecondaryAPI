@@ -4,4 +4,9 @@ Details:
 http://127.0.0.1:5000/db/api/user/details/?user=eugene@mail.ru
 Follow:
 curl -H "Content-Type: application/json" -X POST -d ' {"follower": "easdfxa7868mze@ma.rzxcv", "followee": "easdfxa7868mze@ma.rzxcv"}' http://127.0.0.1:5000/db/api/user/follow/
-
+listFollowers:
+http://127.0.0.1:5000/db/api/user/listFollowers/?user=easdfxa7868mze@ma.rzxcv&order=asc
+listFollowing
+http://127.0.0.1:5000/db/api/user/listFollowing/?user=eugene@mail.ru
+listPosts
+http://127.0.0.1:5000/eugene@mail.ru
