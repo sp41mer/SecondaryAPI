@@ -67,7 +67,7 @@ def create():
         if requestData.get('isEdited', 0):
             requestData['isEdited'] = 1
 
-        if requestData.get('isEdited', 0):
+        if requestData.get('isSpam', 0):
             requestData['isSpam'] = 1
 
         if requestData.get('isDeleted', 0):
@@ -654,4 +654,5 @@ def list_posts():
                 'code': 2,
                 'response': 'Invalid request'
             })
+
 
