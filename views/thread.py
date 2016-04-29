@@ -500,6 +500,18 @@ def details():
             responseInFor = dictfetchall(cursor)
             response[0]['forum'] = responseInFor[0]
 
+        if response[0]['isDeleted'] == 0:
+            response[0]['isDeleted'] = 'false'
+        else:
+            response[0]['isDeleted'] = 'true'
+
+        if response[0]['isClosed'] == 0:
+            response[0]['isClosed'] = 'false'
+        else:
+            response[0]['isClosed'] = 'true'
+
+        response[0]['date'] = str(response[0]['date'])
+
         return json.dumps({
                 'code': 0,
                 'response': {
@@ -515,6 +527,171 @@ def details():
                 }
             })
 
+    else:
+        return json.dumps({
+                'code': 2,
+                'response': 'Error'
+            })
+
+
+@thread.route("/list/", methods=['GET'])
+def list_threads():
+
+    user_email = request.args.get("user", default=None)
+    forum_name = request.args.get("forum", default=None)
+
+    since = request.args.get("since", type=str, default=None)
+    limit = request.args.get("limit", type=int, default=None)
+    order = request.args.get("order", default='desc')
+
+    if order not in ['asc', 'desc']:
+        return json.dumps({
+                'code': 3,
+                'response': 'Error'
+            })
+
+    if limit:
+        trueLimit = 'LIMIT '+limit
+    else:
+        trueLimit = ''
+
+    if since:
+        trueSince = ' and date >='+since
+    else:
+        trueSince = ''
+
+    if user_email:
+
+        try:
+            cursor.execute(''' select * from Thread t where t.user='{}' {} order by t.date {} {} '''.format(user_email, trueSince, order, trueLimit))
+        except (MySQLdb.Error, MySQLdb.Warning):
+            connection.close()
+            return json.dumps({
+                'code': 1,
+                'response': 'Error'
+            })
+
+        response = dictfetchall(cursor)
+        connection.close()
+        responseArrayToJson = []
+
+        for eachThread in response:
+            if eachThread['isDeleted'] == 0:
+                eachThread['isDeleted'] = 'false'
+            else:
+                eachThread['isDeleted'] = 'true'
+
+            if eachThread['isClosed'] == 0:
+                eachThread['isClosed'] = 'false'
+            else:
+                eachThread['isClosed'] = 'true'
+
+            eachThread['date'] = str(eachThread['date'])
+
+            responseArrayToJson.append({"date": eachThread['date'],
+                                        "forum": eachThread['forum'],
+                                        "id": eachThread['id'],
+                                        "isClosed": eachThread['isClosed'],
+                                        "isDeleted": eachThread['isDeleted'],
+                                        "message": eachThread['message'],
+                                        "slug": eachThread['slug'],
+                                        "title": eachThread['title'],
+                                        "user": eachThread['user']})
+
+        return json.dumps({
+                'code': 0,
+                'response': responseArrayToJson
+            })
+
+    elif forum_name:
+
+        try:
+            cursor.execute(''' select * from Thread t where t.forum='{}' {} order by t.date {} {} '''.format(forum_name, trueSince, order, trueLimit))
+        except (MySQLdb.Error, MySQLdb.Warning):
+            connection.close()
+            return json.dumps({
+                'code': 1,
+                'response': 'Error'
+            })
+
+        response = dictfetchall(cursor)
+
+        connection.close()
+
+        responseArrayToJson = []
+
+        for eachThread in response:
+            if eachThread['isDeleted'] == 0:
+                eachThread['isDeleted'] = 'false'
+            else:
+                eachThread['isDeleted'] = 'true'
+
+            if eachThread['isClosed'] == 0:
+                eachThread['isClosed'] = 'false'
+            else:
+                eachThread['isClosed'] = 'true'
+
+            eachThread['date'] = str(eachThread['date'])
+
+            responseArrayToJson.append({"date": eachThread['date'],
+                                        "forum": eachThread['forum'],
+                                        "id": eachThread['id'],
+                                        "isClosed": eachThread['isClosed'],
+                                        "isDeleted": eachThread['isDeleted'],
+                                        "message": eachThread['message'],
+                                        "slug": eachThread['slug'],
+                                        "title": eachThread['title'],
+                                        "user": eachThread['user']})
+
+        return json.dumps({
+                'code': 0,
+                'response': responseArrayToJson
+            })
+
+    elif forum_name and user_email:
+
+        try:
+            cursor.execute(''' select * from Thread t where t.user='{}' and t.forum='{}' {} order by t.date {} {} '''.format(user_email, forum_name, trueSince, order, trueLimit))
+        except (MySQLdb.Error, MySQLdb.Warning):
+            connection.close()
+            return json.dumps({
+                'code': 1,
+                'response': 'Error'
+            })
+
+        response = dictfetchall(cursor)
+
+        connection.close()
+
+        responseArrayToJson = []
+
+        for eachThread in response:
+            if eachThread['isDeleted'] == 0:
+                eachThread['isDeleted'] = 'false'
+            else:
+                eachThread['isDeleted'] = 'true'
+
+            if eachThread['isClosed'] == 0:
+                eachThread['isClosed'] = 'false'
+            else:
+                eachThread['isClosed'] = 'true'
+
+            eachThread['date'] = str(eachThread['date'])
+
+            responseArrayToJson.append({"date": eachThread['date'],
+                                        "forum": eachThread['forum'],
+                                        "id": eachThread['id'],
+                                        "isClosed": eachThread['isClosed'],
+                                        "isDeleted": eachThread['isDeleted'],
+                                        "message": eachThread['message'],
+                                        "slug": eachThread['slug'],
+                                        "title": eachThread['title'],
+                                        "user": eachThread['user']})
+
+        return json.dumps({
+                'code': 0,
+                'response': responseArrayToJson
+            })
     else:
         return json.dumps({
                 'code': 2,
