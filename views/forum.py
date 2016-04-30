@@ -145,6 +145,9 @@ def details():
                 return e
         connection.close()
 
+        if userDict[0]['username'] == 'none':
+            userDict[0]['username'] = None
+
         return flask.jsonify({
             "code": 0,
             "response": {

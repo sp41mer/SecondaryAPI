@@ -58,7 +58,7 @@ def create():
 
         #needs some refactoring( uebischno kakto:( )
 
-        if not requestData.get('isApproved', 0):
+        if requestData.get('isApproved', 0):
             requestData['isApproved'] = 1
 
         if requestData.get('isHighlighted', 0):

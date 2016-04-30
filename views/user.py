@@ -4,6 +4,7 @@ from flask.ext.mysql import MySQL
 import MySQLdb
 import json
 import itertools
+import flask
 
 user = Blueprint("user", __name__)
 
@@ -45,7 +46,7 @@ def create():
         except (MySQLdb.Error, MySQLdb.Warning) as e:
             connection.close()
             return json.dumps({
-            'code': 4,
+            'code': 5,
             'response': 'SQL fail'
         })
 
@@ -93,7 +94,7 @@ def details():
         try:
          cursor.execute('''SELECT * FROM User WHERE email = '{}' '''.format(get_pars))
          if cursor.rowcount == 0:
-                return json.dumps({'code':5, 'response': 'User not found'})
+                return json.dumps({'code': 5, 'response': 'User not found'})
 
          response = dictfetchall(cursor)
 
@@ -126,14 +127,18 @@ def details():
             response[0]['isAnonymous'] = False
         else:
             response[0]['isAnonymous'] = True
+            response[0]['username'] = None
+            response[0]['about'] = None
+            response[0]['name'] = None
 
-        return json.dumps({
+
+        return flask.jsonify({
             'code': 0,
             'response': {
                 'about': response[0]['about'],
                 'email': response[0]['email'],
                 'followers': true_followers,
-                'followees': true_followees,
+                'following': true_followees,
                 'subscriptions': true_threads,
                 'id': response[0]['id'],
                 'isAnonymous':response[0]['isAnonymous'],
@@ -216,7 +221,7 @@ def follow():
                 'about': response[0]['about'],
                 'email': response[0]['email'],
                 'followers': true_followers,
-                'followees': true_followees,
+                'following': true_followees,
                 'subscriptions': true_threads,
                 'id': response[0]['id'],
                 'isAnonymous':response[0]['isAnonymous'],
@@ -298,7 +303,7 @@ def updateProfile():
                 'about': response[0]['about'],
                 'email': response[0]['email'],
                 'followers': true_followers,
-                'followees': true_followees,
+                'following': true_followees,
                 'subscriptions': true_threads,
                 'id': response[0]['id'],
                 'isAnonymous':response[0]['isAnonymous'],
@@ -380,7 +385,7 @@ def unfollow():
                 'about': response[0]['about'],
                 'email': response[0]['email'],
                 'followers': true_followers,
-                'followees': true_followees,
+                'following': true_followees,
                 'subscriptions': true_threads,
                 'id': response[0]['id'],
                 'isAnonymous': response[0]['isAnonymous'],
@@ -408,7 +413,7 @@ def listFollowers():
         order = request.args.get("order", type=str, default='desc')
 
         if limit:
-            trueLimit = 'LIMIT '+limit
+            trueLimit = 'LIMIT '+ str(limit)
         else:
             trueLimit = ''
 
@@ -421,7 +426,7 @@ def listFollowers():
         since_id = request.args.get('since_id', type=str, default=None)
 
         if since_id:
-            trueSinceId = 'and u.id >='+since_id
+            trueSinceId = 'and u.id >='+str(since_id)
         else:
             trueSinceId = ''
 
@@ -477,7 +482,7 @@ def listFollowers():
                 'about': response[0]['about'],
                 'email': response[0]['email'],
                 'followers': true_followers,
-                'followees': true_followees,
+                'following': true_followees,
                 'subscriptions': true_threads,
                 'id': response[0]['id'],
                 'isAnonymous': response[0]['isAnonymous'],
@@ -509,7 +514,7 @@ def list_following():
         order = request.args.get("order", type=str, default='desc')
 
         if limit:
-            trueLimit = 'LIMIT '+limit
+            trueLimit = 'LIMIT '+str(limit)
         else:
             trueLimit = ''
 
@@ -522,7 +527,7 @@ def list_following():
         since_id = request.args.get('since_id', type=str, default=None)
 
         if since_id:
-            trueSinceId = 'and u.id >='+since_id
+            trueSinceId = 'and u.id >='+str(since_id)
         else:
             trueSinceId = ''
 
@@ -570,7 +575,7 @@ def list_following():
                     true_threads.append(val)
 
             if response[0]['isAnonymous'] == 0:
-                response[0]['isAnonymous'] =False
+                response[0]['isAnonymous'] = False
             else:
                 response[0]['isAnonymous'] = True
 
@@ -578,7 +583,7 @@ def list_following():
                 'about': response[0]['about'],
                 'email': response[0]['email'],
                 'followers': true_followers,
-                'followees': true_followees,
+                'following': true_followees,
                 'subscriptions': true_threads,
                 'id': response[0]['id'],
                 'isAnonymous': response[0]['isAnonymous'],
@@ -610,7 +615,7 @@ def list_posts_users():
         order = request.args.get("order", type=str, default='desc')
 
         if limit:
-            trueLimit = 'LIMIT '+limit
+            trueLimit = 'LIMIT '+str(limit)
         else:
             trueLimit = ''
 
@@ -623,7 +628,7 @@ def list_posts_users():
         since_id = request.args.get('since_id', type=str, default=None)
 
         if since_id:
-            trueSinceId = ' and u.id >='+since_id
+            trueSinceId = ' and u.id >='+str(since_id)
         else:
             trueSinceId = ''
 
@@ -669,6 +674,7 @@ def list_posts_users():
                 eachPost['isSpam'] = False
             else:
                 eachPost['isSpam'] = True
+
             eachPost['date'] = str(eachPost['date'])
 
             responseArrayToJson.append({
