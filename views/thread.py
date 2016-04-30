@@ -8,11 +8,6 @@ import json
 import itertools
 
 thread = Blueprint("thread", __name__)
-connection = MySQLdb.connect(host="localhost",
-                             user="root",
-                             passwd="root",
-                             db="forum_db")
-cursor = connection.cursor()
 
 
 def dictfetchall(cursor):
@@ -28,6 +23,11 @@ def close():
     requestData = json.loads(request.data)
 
     if requestData['thread']:
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
 
         try:
             cursor.execute(''' update Thread t set isClosed=1 where t.id={} '''.format(requestData['thread']))
@@ -58,6 +58,11 @@ def open():
     requestData = json.loads(request.data)
 
     if requestData['thread']:
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
 
         try:
             cursor.execute(''' update Thread t set isClosed=0 where t.id={} '''.format(requestData['thread']))
@@ -90,6 +95,11 @@ def subscribe():
     requestData = json.loads(request.data)
 
     if requestData['thread'] and requestData['user']:
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
 
         try:
             cursor.execute(''' insert into `Subscribe` (`thread`, `user`) values ('{}', '{}') '''.format(requestData['thread'], requestData['user']))
@@ -123,19 +133,22 @@ def unsubscribe():
     requestData = json.loads(request.data)
 
     if requestData['thread'] and requestData['user']:
-
-        c, conn = connection()
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
         try:
-            c.execute(''' delete from Subscribe where thread={} and user='{}' '''.format(requestData['thread'], requestData['user']))
-            conn.commit()
+            cursor.execute(''' delete from Subscribe where thread={} and user='{}' '''.format(requestData['thread'], requestData['user']))
+            connection.commit()
         except (MySQLdb.Error, MySQLdb.Warning):
-            conn.close()
+            connection.close()
             return json.dumps({
                 'code': 4,
                 'response': 'Error'
             })
 
-        conn.close()
+        connection.close()
 
         return json.dumps({
                 'code': 1,
@@ -166,6 +179,12 @@ def create():
         if requestData.get('isDeleted', 0):
             requestData['isDeleted'] = 1
 
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
+
         try:
             cursor.execute(
             '''insert into `Thread` (`forum`, `title`, `user`, `date`, `message`, `slug`, `isDeleted`, `isClosed`) values ('{}', '{}','{}','{}','{}','{}','{}','{}') '''.format(
@@ -191,14 +210,14 @@ def create():
         response = dictfetchall(cursor)
 
         if response[0]['isDeleted'] == 0:
-            response[0]['isDeleted'] = 'false'
+            response[0]['isDeleted'] = False
         else:
-            response[0]['isDeleted'] = 'true'
+            response[0]['isDeleted'] = True
 
         if response[0]['isClosed'] == 0:
-            response[0]['isClosed'] = 'false'
+            response[0]['isClosed'] = False
         else:
-            response[0]['isClosed'] = 'true'
+            response[0]['isClosed'] = True
 
         response[0]['date'] = str(response[0]['date'])
 
@@ -230,6 +249,11 @@ def remove():
     requestData = json.loads(request.data)
 
     if requestData['thread']:
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
 
         try:
             cursor.execute(''' select count(*) from post where thread={} and isDeleted != 0 '''.format(requestData['thread']))
@@ -277,6 +301,11 @@ def restore():
     requestData = json.loads(request.data)
 
     if requestData['thread']:
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
 
         try:
             cursor.execute(''' select count(*) from post where thread={} and isDeleted != 0 '''.format(requestData['thread']))
@@ -325,19 +354,23 @@ def vote():
 
     if requestData['thread'] and requestData['vote']:
 
-        c, conn = connection()
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
         try:
             if requestData['vote'] == -1:
-                c.execute(''' update Thread t set dislikes=dislikes+1, points=points-1 where t.id={} '''.format(requestData['thread']))
+                cursor.execute(''' update Thread t set dislikes=dislikes+1, points=points-1 where t.id={} '''.format(requestData['thread']))
             elif requestData['vote'] == 1:
-                c.execute(''' update Thread t set likes=likes+1, points=points+1 where t.id={} '''.format(requestData['thread']))
+                cursor.execute(''' update Thread t set likes=likes+1, points=points+1 where t.id={} '''.format(requestData['thread']))
             else:
                 return json.dumps({
                 'code': 3,
                 'response': 'Error'
             })
 
-            conn.commit()
+            connection.commit()
 
             cursor.execute(''' select * from Thread t where t.id={} '''.format(requestData['thread']))
         except (MySQLdb.Error, MySQLdb.Warning):
@@ -350,14 +383,14 @@ def vote():
         response = dictfetchall(cursor)
 
         if response[0]['isDeleted'] == 0:
-            response[0]['isDeleted'] = 'false'
+            response[0]['isDeleted'] = False
         else:
-            response[0]['isDeleted'] = 'true'
+            response[0]['isDeleted'] = True
 
         if response[0]['isClosed'] == 0:
-            response[0]['isClosed'] = 'false'
+            response[0]['isClosed'] = False
         else:
-            response[0]['isClosed'] = 'true'
+            response[0]['isClosed'] = True
 
         response[0]['date'] = str(response[0]['date'])
 
@@ -387,6 +420,11 @@ def update():
     requestData = json.loads(request.data)
 
     if requestData['message'] and requestData['slug'] and requestData['thread']:
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
 
         try:
             cursor.execute(''' update Thread t set t.message='{}', t.slug='{}' where t.id={} '''.format(requestData['message'], requestData['slug'], requestData['thread']))
@@ -402,14 +440,14 @@ def update():
         response = dictfetchall(cursor)
 
         if response[0]['isDeleted'] == 0:
-            response[0]['isDeleted'] = 'false'
+            response[0]['isDeleted'] = False
         else:
-            response[0]['isDeleted'] = 'true'
+            response[0]['isDeleted'] = True
 
         if response[0]['isClosed'] == 0:
-            response[0]['isClosed'] = 'false'
+            response[0]['isClosed'] = False
         else:
-            response[0]['isClosed'] = 'true'
+            response[0]['isClosed'] = True
 
         response[0]['date'] = str(response[0]['date'])
 
@@ -447,6 +485,11 @@ def details():
             })
 
     if thread_id:
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
 
         try:
             cursor.execute(''' select * from Thread t where t.id='{}' '''.format(thread_id))
@@ -459,7 +502,6 @@ def details():
 
         response = dictfetchall(cursor)
 
-        connection.close()
 
         if 'user' in related and cursor.execute(''' select * from User u where u.email='{}' '''.format(response[0]['user'])):
             responseInFor = dictfetchall(cursor)
@@ -501,16 +543,18 @@ def details():
             response[0]['forum'] = responseInFor[0]
 
         if response[0]['isDeleted'] == 0:
-            response[0]['isDeleted'] = 'false'
+            response[0]['isDeleted'] = False
         else:
-            response[0]['isDeleted'] = 'true'
+            response[0]['isDeleted'] = True
 
         if response[0]['isClosed'] == 0:
-            response[0]['isClosed'] = 'false'
+            response[0]['isClosed'] = False
         else:
-            response[0]['isClosed'] = 'true'
+            response[0]['isClosed'] = True
 
         response[0]['date'] = str(response[0]['date'])
+
+        connection.close()
 
         return json.dumps({
                 'code': 0,
@@ -561,6 +605,11 @@ def list_threads():
         trueSince = ''
 
     if user_email:
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
 
         try:
             cursor.execute(''' select * from Thread t where t.user='{}' {} order by t.date {} {} '''.format(user_email, trueSince, order, trueLimit))
@@ -577,14 +626,14 @@ def list_threads():
 
         for eachThread in response:
             if eachThread['isDeleted'] == 0:
-                eachThread['isDeleted'] = 'false'
+                eachThread['isDeleted'] = False
             else:
-                eachThread['isDeleted'] = 'true'
+                eachThread['isDeleted'] = True
 
             if eachThread['isClosed'] == 0:
-                eachThread['isClosed'] = 'false'
+                eachThread['isClosed'] = False
             else:
-                eachThread['isClosed'] = 'true'
+                eachThread['isClosed'] = True
 
             eachThread['date'] = str(eachThread['date'])
 
@@ -604,6 +653,11 @@ def list_threads():
             })
 
     elif forum_name:
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
 
         try:
             cursor.execute(''' select * from Thread t where t.forum='{}' {} order by t.date {} {} '''.format(forum_name, trueSince, order, trueLimit))
@@ -622,14 +676,14 @@ def list_threads():
 
         for eachThread in response:
             if eachThread['isDeleted'] == 0:
-                eachThread['isDeleted'] = 'false'
+                eachThread['isDeleted'] = False
             else:
-                eachThread['isDeleted'] = 'true'
+                eachThread['isDeleted'] = True
 
             if eachThread['isClosed'] == 0:
-                eachThread['isClosed'] = 'false'
+                eachThread['isClosed'] = False
             else:
-                eachThread['isClosed'] = 'true'
+                eachThread['isClosed'] = True
 
             eachThread['date'] = str(eachThread['date'])
 
@@ -649,6 +703,11 @@ def list_threads():
             })
 
     elif forum_name and user_email:
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
 
         try:
             cursor.execute(''' select * from Thread t where t.user='{}' and t.forum='{}' {} order by t.date {} {} '''.format(user_email, forum_name, trueSince, order, trueLimit))
@@ -667,14 +726,14 @@ def list_threads():
 
         for eachThread in response:
             if eachThread['isDeleted'] == 0:
-                eachThread['isDeleted'] = 'false'
+                eachThread['isDeleted'] = False
             else:
-                eachThread['isDeleted'] = 'true'
+                eachThread['isDeleted'] = True
 
             if eachThread['isClosed'] == 0:
-                eachThread['isClosed'] = 'false'
+                eachThread['isClosed'] = False
             else:
-                eachThread['isClosed'] = 'true'
+                eachThread['isClosed'] = True
 
             eachThread['date'] = str(eachThread['date'])
 

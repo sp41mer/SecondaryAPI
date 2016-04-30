@@ -6,12 +6,6 @@ import json
 import itertools
 
 post = Blueprint("post", __name__)
-connection = MySQLdb.connect(host="localhost",
-                             user="root",
-                             passwd="root",
-                             db="forum_db")
-cursor = connection.cursor()
-
 
 def dictfetchall(cursor):
     """Returns all rows from a cursor as a list of dicts"""
@@ -24,6 +18,12 @@ def restore():
     requestData = json.loads(request.data)
 
     if requestData['post']:
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
+
         try:
             cursor.execute(''' update Post p set p.isDeleted=0 where p.id={} '''.format(requestData['post']))
             cursor.execute(''' select thread from Post where id={} '''.format(requestData['post']))
@@ -73,7 +73,11 @@ def create():
         if requestData.get('isDeleted', 0):
             requestData['isDeleted'] = 1
 
-
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
 
         try:
             if requestData.get('parent', None):
@@ -108,29 +112,28 @@ def create():
         response = dictfetchall(cursor)
 
         if response[0]['isApproved'] == 0:
-            response[0]['isApproved'] = 'false'
+            response[0]['isApproved'] = False
         else:
-            response[0]['isApproved'] = 'true'
+            response[0]['isApproved'] = True
 
         if response[0]['isDeleted'] == 0:
-            response[0]['isDeleted'] = 'false'
+            response[0]['isDeleted'] = False
         else:
-            response[0]['isDeleted'] = 'true'
-
+            response[0]['isDeleted'] = True
         if response[0]['isEdited'] == 0:
-            response[0]['isEdited'] = 'false'
+            response[0]['isEdited'] = False
         else:
-            response[0]['isEdited'] = 'true'
+            response[0]['isEdited'] = True
 
         if response[0]['isHighlighted'] == 0:
-            response[0]['isHighlighted'] = 'false'
+            response[0]['isHighlighted'] = False
         else:
-            response[0]['isHighlighted'] = 'true'
+            response[0]['isHighlighted'] = True
 
         if response[0]['isSpam'] == 0:
-            response[0]['isSpam'] = 'false'
+            response[0]['isSpam'] = False
         else:
-            response[0]['isSpam'] = 'true'
+            response[0]['isSpam'] = True
 
         response[0]['date'] = str(response[0]['date'])
 
@@ -166,6 +169,11 @@ def remove():
     requestData = json.loads(request.data)
 
     if requestData['post']:
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
 
         try:
             cursor.execute(''' update Post p set p.isDeleted=1 where p.id={} '''.format(requestData['post']))
@@ -200,12 +208,17 @@ def update():
 
     if requestData['post'] and requestData['message']:
 
-        c, conn = connection()
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
+
         try:
-            c.execute(''' update Post p set p.message='{}' where p.id={} '''.format(requestData['message'], requestData['post']))
-            c.execute(''' select * from Post p where p.id={} '''.format(requestData['post']))
+            cursor.execute(''' update Post p set p.message='{}' where p.id={} '''.format(requestData['message'], requestData['post']))
+            cursor.execute(''' select * from Post p where p.id={} '''.format(requestData['post']))
         except (MySQLdb.Error, MySQLdb.Warning):
-            conn.close()
+            connection.close()
             return json.dumps({
             'code': 4,
             'response': 'Error'
@@ -214,29 +227,28 @@ def update():
         response = dictfetchall(cursor)
 
         if response[0]['isApproved'] == 0:
-            response[0]['isApproved'] = 'false'
+            response[0]['isApproved'] = False
         else:
-            response[0]['isApproved'] = 'true'
+            response[0]['isApproved'] = True
 
         if response[0]['isDeleted'] == 0:
-            response[0]['isDeleted'] = 'false'
+            response[0]['isDeleted'] = False
         else:
-            response[0]['isDeleted'] = 'true'
-
+            response[0]['isDeleted'] = True
         if response[0]['isEdited'] == 0:
-            response[0]['isEdited'] = 'false'
+            response[0]['isEdited'] = False
         else:
-            response[0]['isEdited'] = 'true'
+            response[0]['isEdited'] = True
 
         if response[0]['isHighlighted'] == 0:
-            response[0]['isHighlighted'] = 'false'
+            response[0]['isHighlighted'] = False
         else:
-            response[0]['isHighlighted'] = 'true'
+            response[0]['isHighlighted'] = True
 
         if response[0]['isSpam'] == 0:
-            response[0]['isSpam'] = 'false'
+            response[0]['isSpam'] = False
         else:
-            response[0]['isSpam'] = 'true'
+            response[0]['isSpam'] = True
 
         response[0]['date'] = str(response[0]['date'])
 
@@ -278,6 +290,11 @@ def vote():
             'response': 'Error'
             })
 
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
         try:
             if requestData['vote'] == -1:
                 cursor.execute(''' update Post p set dislikes=dislikes+1, points=points-1 where p.id={} '''.format(requestData['post']))
@@ -296,29 +313,28 @@ def vote():
         response = dictfetchall(cursor)
 
         if response[0]['isApproved'] == 0:
-            response[0]['isApproved'] = 'false'
+            response[0]['isApproved'] = False
         else:
-            response[0]['isApproved'] = 'true'
+            response[0]['isApproved'] = True
 
         if response[0]['isDeleted'] == 0:
-            response[0]['isDeleted'] = 'false'
+            response[0]['isDeleted'] = False
         else:
-            response[0]['isDeleted'] = 'true'
-
+            response[0]['isDeleted'] = True
         if response[0]['isEdited'] == 0:
-            response[0]['isEdited'] = 'false'
+            response[0]['isEdited'] = False
         else:
-            response[0]['isEdited'] = 'true'
+            response[0]['isEdited'] = True
 
         if response[0]['isHighlighted'] == 0:
-            response[0]['isHighlighted'] = 'false'
+            response[0]['isHighlighted'] = False
         else:
-            response[0]['isHighlighted'] = 'true'
+            response[0]['isHighlighted'] = True
 
         if response[0]['isSpam'] == 0:
-            response[0]['isSpam'] = 'false'
+            response[0]['isSpam'] = False
         else:
-            response[0]['isSpam'] = 'true'
+            response[0]['isSpam'] = True
 
         response[0]['date'] = str(response[0]['date'])
 
@@ -355,6 +371,12 @@ def details():
     related = request.args.getlist('related', type=str)
 
     if post:
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
+
         try:
             cursor.execute(''' select * from Post p where p.id='{}' '''.format(post))
         except (MySQLdb.Error, MySQLdb.Warning):
@@ -373,29 +395,28 @@ def details():
         response = dictfetchall(cursor)
 
         if response[0]['isApproved'] == 0:
-            response[0]['isApproved'] = 'false'
+            response[0]['isApproved'] = False
         else:
-            response[0]['isApproved'] = 'true'
+            response[0]['isApproved'] = True
 
         if response[0]['isDeleted'] == 0:
-            response[0]['isDeleted'] = 'false'
+            response[0]['isDeleted'] = False
         else:
-            response[0]['isDeleted'] = 'true'
-
+            response[0]['isDeleted'] = True
         if response[0]['isEdited'] == 0:
-            response[0]['isEdited'] = 'false'
+            response[0]['isEdited'] = False
         else:
-            response[0]['isEdited'] = 'true'
+            response[0]['isEdited'] = True
 
         if response[0]['isHighlighted'] == 0:
-            response[0]['isHighlighted'] = 'false'
+            response[0]['isHighlighted'] = False
         else:
-            response[0]['isHighlighted'] = 'true'
+            response[0]['isHighlighted'] = True
 
         if response[0]['isSpam'] == 0:
-            response[0]['isSpam'] = 'false'
+            response[0]['isSpam'] = False
         else:
-            response[0]['isSpam'] = 'true'
+            response[0]['isSpam'] = True
 
         response[0]['date'] = str(response[0]['date'])
 
@@ -454,6 +475,12 @@ def list_posts():
 
     if thread:
 
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
+
         try:
             cursor.execute(''' select * from Post p where p.thread='{}' {} order by p.date {} {} '''.format(thread, trueSince, order, trueLimit))
         except (MySQLdb.Error, MySQLdb.Warning):
@@ -470,29 +497,29 @@ def list_posts():
 
         for eachPost in response:
             if eachPost['isApproved'] == 0:
-                eachPost['isApproved'] = 'false'
+                eachPost['isApproved'] = False
             else:
-                eachPost['isApproved'] = 'true'
+                eachPost['isApproved'] = True
 
             if eachPost['isDeleted'] == 0:
-                eachPost['isDeleted'] = 'false'
+                eachPost['isDeleted'] = False
             else:
-                eachPost['isDeleted'] = 'true'
+                eachPost['isDeleted'] = True
 
             if eachPost['isEdited'] == 0:
-                eachPost['isEdited'] = 'false'
+                eachPost['isEdited'] = False
             else:
-                eachPost['isEdited'] = 'true'
+                eachPost['isEdited'] = True
 
             if eachPost['isHighlighted'] == 0:
-                eachPost['isHighlighted'] = 'false'
+                eachPost['isHighlighted'] = False
             else:
-                eachPost['isHighlighted'] = 'true'
+                eachPost['isHighlighted'] = True
 
             if eachPost['isSpam'] == 0:
-                eachPost['isSpam'] = 'false'
+                eachPost['isSpam'] = False
             else:
-                eachPost['isSpam'] = 'true'
+                eachPost['isSpam'] = True
             eachPost['date'] = str(eachPost['date'])
 
             responseArrayToJson.append({
@@ -520,6 +547,12 @@ def list_posts():
 
     elif forum:
 
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
+
         try:
             cursor.execute(''' select * from Post p where p.forum='{}' {} order by p.date {} {} '''.format(forum, trueSince, order, trueLimit))
         except (MySQLdb.Error, MySQLdb.Warning):
@@ -536,29 +569,29 @@ def list_posts():
 
         for eachPost in response:
             if eachPost['isApproved'] == 0:
-                eachPost['isApproved'] = 'false'
+                eachPost['isApproved'] = False
             else:
-                eachPost['isApproved'] = 'true'
+                eachPost['isApproved'] = True
 
             if eachPost['isDeleted'] == 0:
-                eachPost['isDeleted'] = 'false'
+                eachPost['isDeleted'] = False
             else:
-                eachPost['isDeleted'] = 'true'
+                eachPost['isDeleted'] = True
 
             if eachPost['isEdited'] == 0:
-                eachPost['isEdited'] = 'false'
+                eachPost['isEdited'] = False
             else:
-                eachPost['isEdited'] = 'true'
+                eachPost['isEdited'] = True
 
             if eachPost['isHighlighted'] == 0:
-                eachPost['isHighlighted'] = 'false'
+                eachPost['isHighlighted'] = False
             else:
-                eachPost['isHighlighted'] = 'true'
+                eachPost['isHighlighted'] = True
 
             if eachPost['isSpam'] == 0:
-                eachPost['isSpam'] = 'false'
+                eachPost['isSpam'] = False
             else:
-                eachPost['isSpam'] = 'true'
+                eachPost['isSpam'] = True
             eachPost['date'] = str(eachPost['date'])
 
             responseArrayToJson.append({
@@ -585,6 +618,11 @@ def list_posts():
             })
 
     elif forum and thread:
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
 
         try:
             cursor.execute(''' select * from Post p where p.thread='{}' and p.forum='{}' {} order by t.date {} {} '''.format(thread, forum, trueSince, order, trueLimit))
@@ -602,29 +640,29 @@ def list_posts():
 
         for eachPost in response:
             if eachPost['isApproved'] == 0:
-                eachPost['isApproved'] = 'false'
+                eachPost['isApproved'] = False
             else:
-                eachPost['isApproved'] = 'true'
+                eachPost['isApproved'] = True
 
             if eachPost['isDeleted'] == 0:
-                eachPost['isDeleted'] = 'false'
+                eachPost['isDeleted'] = False
             else:
-                eachPost['isDeleted'] = 'true'
+                eachPost['isDeleted'] = True
 
             if eachPost['isEdited'] == 0:
-                eachPost['isEdited'] = 'false'
+                eachPost['isEdited'] = False
             else:
-                eachPost['isEdited'] = 'true'
+                eachPost['isEdited'] = True
 
             if eachPost['isHighlighted'] == 0:
-                eachPost['isHighlighted'] = 'false'
+                eachPost['isHighlighted'] = False
             else:
-                eachPost['isHighlighted'] = 'true'
+                eachPost['isHighlighted'] = True
 
             if eachPost['isSpam'] == 0:
-                eachPost['isSpam'] = 'false'
+                eachPost['isSpam'] = False
             else:
-                eachPost['isSpam'] = 'true'
+                eachPost['isSpam'] = True
             eachPost['date'] = str(eachPost['date'])
 
             responseArrayToJson.append({

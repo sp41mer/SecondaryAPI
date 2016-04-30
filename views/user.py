@@ -7,12 +7,6 @@ import itertools
 
 user = Blueprint("user", __name__)
 
-connection = MySQLdb.connect(host="localhost",
-                             user="root",
-                             passwd="root",
-                             db="forum_db")
-cursor = connection.cursor()
-
 
 def dictfetchall(cursor):
     """Returns all rows from a cursor as a list of dicts"""
@@ -33,6 +27,12 @@ def create():
         anon = False
 
     if (request_data.get('username',None) and request_data.get('about',None) and request_data.get('name',None) and request_data.get('email', None)) or anon:
+
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
 
         try:
             cursor.execute('''insert into `User` (`username`, `email`, `about`, `name`, `isAnonymous`)
@@ -84,6 +84,12 @@ def create():
 def details():
     get_pars = request.args.get("user", type=str, default=None)
     if get_pars:
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
+
         try:
          cursor.execute('''SELECT * FROM User WHERE email = '{}' '''.format(get_pars))
          if cursor.rowcount == 0:
@@ -117,9 +123,9 @@ def details():
                 connection.close()
                 return e
         if response[0]['isAnonymous'] == 0:
-            response[0]['isAnonymous'] = 'false'
+            response[0]['isAnonymous'] = False
         else:
-            response[0]['isAnonymous'] = 'true'
+            response[0]['isAnonymous'] = True
 
         return json.dumps({
             'code': 0,
@@ -147,6 +153,12 @@ def follow():
     request_data = json.loads(request.data)
 
     if request_data['follower'] and request_data['followee']:
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
+
         try:
             cursor.execute('''insert into `Follow` (`follower`, `followee`) values ('{}','{}') '''.format(request_data['follower'],
                                                                                                  request_data['followee']))
@@ -194,9 +206,9 @@ def follow():
             })
 
         if response[0]['isAnonymous'] == 0:
-            response[0]['isAnonymous'] = 'false'
+            response[0]['isAnonymous'] = False
         else:
-            response[0]['isAnonymous'] = 'true'
+            response[0]['isAnonymous'] = True
 
         return json.dumps({
             'code': 1,
@@ -224,6 +236,11 @@ def updateProfile():
     request_data = json.loads(request.data)
 
     if request_data['about'] and request_data['user'] and request_data['name']:
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
 
         try:
             cursor.execute(''' update User u set name='{}', about='{}' where u.email='{}' '''.format(request_data['name'], request_data['about'], request_data['user']))
@@ -271,9 +288,9 @@ def updateProfile():
             })
 
         if response[0]['isAnonymous'] == 0:
-            response[0]['isAnonymous'] = 'false'
+            response[0]['isAnonymous'] = False
         else:
-            response[0]['isAnonymous'] = 'true'
+            response[0]['isAnonymous'] = True
 
         return json.dumps({
             'code': 1,
@@ -301,6 +318,11 @@ def unfollow():
     request_data = json.loads(request.data)
 
     if request_data['follower'] and request_data['followee']:
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
 
         try:
             cursor.execute(''' delete from Follow where follower='{}' and followee='{}' '''.format(request_data['follower'], request_data['followee']))
@@ -348,9 +370,9 @@ def unfollow():
             })
 
         if response[0]['isAnonymous'] == 0:
-            response[0]['isAnonymous'] = 'false'
+            response[0]['isAnonymous'] = False
         else:
-            response[0]['isAnonymous'] = 'true'
+            response[0]['isAnonymous'] = True
 
         return json.dumps({
             'code': 1,
@@ -403,6 +425,12 @@ def listFollowers():
         else:
             trueSinceId = ''
 
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
+
         try:
             cursor.execute(''' select * from Follow f join User u on f.follower = u.email where f.followee='{}' and u.id {} order by u.name {} {} '''.format(requestData, trueSinceId, order, trueLimit))
         except (MySQLdb.Error, MySQLdb.Warning):
@@ -441,9 +469,9 @@ def listFollowers():
                     true_threads.append(val)
 
             if response[0]['isAnonymous'] == 0:
-                response[0]['isAnonymous'] = 'false'
+                response[0]['isAnonymous'] = False
             else:
-                response[0]['isAnonymous'] = 'true'
+                response[0]['isAnonymous'] = True
 
             mainFollowers.append({
                 'about': response[0]['about'],
@@ -498,6 +526,12 @@ def list_following():
         else:
             trueSinceId = ''
 
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
+
         try:
             cursor.execute(''' select * from Follow f join User u on f.followee = u.email where f.follower='{}' and u.id {} order by u.name {} {} '''.format(requestData, trueSinceId, order, trueLimit))
         except (MySQLdb.Error, MySQLdb.Warning):
@@ -536,9 +570,9 @@ def list_following():
                     true_threads.append(val)
 
             if response[0]['isAnonymous'] == 0:
-                response[0]['isAnonymous'] = 'false'
+                response[0]['isAnonymous'] =False
             else:
-                response[0]['isAnonymous'] = 'true'
+                response[0]['isAnonymous'] = True
 
             mainFollowers.append({
                 'about': response[0]['about'],
@@ -593,6 +627,12 @@ def list_posts_users():
         else:
             trueSinceId = ''
 
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
+
         try:
             cursor.execute(''' select * from Post p where p.user = '{}' {} order by p.date {} {} '''.format(requestData, trueSinceId , order, trueLimit))
         except (MySQLdb.Error, MySQLdb.Warning):
@@ -606,29 +646,29 @@ def list_posts_users():
         connection.close()
         for eachPost in response:
             if eachPost['isApproved'] == 0:
-                eachPost['isApproved'] = 'false'
+                eachPost['isApproved'] = False
             else:
-                eachPost['isApproved'] = 'true'
+                eachPost['isApproved'] = True
 
             if eachPost['isDeleted'] == 0:
-                eachPost['isDeleted'] = 'false'
+                eachPost['isDeleted'] = False
             else:
-                eachPost['isDeleted'] = 'true'
+                eachPost['isDeleted'] = True
 
             if eachPost['isEdited'] == 0:
-                eachPost['isEdited'] = 'false'
+                eachPost['isEdited'] = False
             else:
-                eachPost['isEdited'] = 'true'
+                eachPost['isEdited'] = True
 
             if eachPost['isHighlighted'] == 0:
-                eachPost['isHighlighted'] = 'false'
+                eachPost['isHighlighted'] = False
             else:
-                eachPost['isHighlighted'] = 'true'
+                eachPost['isHighlighted'] = True
 
             if eachPost['isSpam'] == 0:
-                eachPost['isSpam'] = 'false'
+                eachPost['isSpam'] = False
             else:
-                eachPost['isSpam'] = 'true'
+                eachPost['isSpam'] = True
             eachPost['date'] = str(eachPost['date'])
 
             responseArrayToJson.append({

@@ -6,11 +6,6 @@ import json
 import itertools
 
 main = Blueprint("main", __name__)
-connection = MySQLdb.connect(host="localhost",
-                             user="root",
-                             passwd="root",
-                             db="forum_db")
-cursor = connection.cursor()
 
 
 def dictfetchall(cursor):
@@ -24,6 +19,12 @@ def dictfetchall(cursor):
 def delete_all():
 
     list = ['User', 'Forum', 'Thread', 'Post', 'Follow', 'Subscribe']
+
+    connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+    cursor = connection.cursor()
 
     for value in list:
         try:
@@ -47,6 +48,11 @@ def get_status():
 
     list = ['user', 'forum', 'thread', 'post']
     count_dict = {}
+    connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+    cursor = connection.cursor()
 
     for el in list:
         try:

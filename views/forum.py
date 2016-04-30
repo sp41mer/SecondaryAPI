@@ -1,16 +1,14 @@
+# -*- coding: utf-8 -*-
 __author__ = 'sp41mer'
 from flask import Blueprint, request
 from flask.ext.mysql import MySQL
 import MySQLdb
 import json
 import itertools
+import flask
 
 forum = Blueprint("forum", __name__)
-connection = MySQLdb.connect(host="localhost",
-                             user="root",
-                             passwd="root",
-                             db="forum_db")
-cursor = connection.cursor()
+
 
 
 def dictfetchall(cursor):
@@ -32,6 +30,11 @@ def create():
             })
 
     if requestData['name'] and requestData['short_name'] and requestData['user']:
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
 
         try:
             cursor.execute(
@@ -60,13 +63,13 @@ def create():
 
         connection.close()
 
-        return json.dumps({
+        return flask.jsonify({
             "code": 0,
             "response": {
                 "id": response[0]['id'],
-                "name": response[0]['name'],
-                "short_name": response[0]['short_name'],
-                "user": response[0]['user']
+                "name": requestData['name'].encode("utf8"),
+                "short_name": requestData['short_name'],
+                "user": requestData['user']
             }
         })
     else:
@@ -83,6 +86,11 @@ def details():
     related = request.args.getlist('related', type=str)
 
     if forum:
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
 
         try:
             cursor.execute(
@@ -137,7 +145,7 @@ def details():
                 return e
         connection.close()
 
-        return json.dumps({
+        return flask.jsonify({
             "code": 0,
             "response": {
                 "id": response[0]['id'],
@@ -188,6 +196,11 @@ def listPosts():
     else:
         trueSince = ''
     if forum:
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
         try:
             cursor.execute(
                 '''select * from Post p where p.forum='{}' {} order by p.date {} {} '''.format(forum, trueSince, order, trueLimit))
@@ -203,29 +216,29 @@ def listPosts():
 
         for eachPost in response:
             if eachPost['isApproved'] == 0:
-                eachPost['isApproved'] = 'false'
+                eachPost['isApproved'] = False
             else:
-                eachPost['isApproved'] = 'true'
+                eachPost['isApproved'] = True
 
             if eachPost['isDeleted'] == 0:
-                eachPost['isDeleted'] = 'false'
+                eachPost['isDeleted'] = False
             else:
-                eachPost['isDeleted'] = 'true'
+                eachPost['isDeleted'] = True
 
             if eachPost['isEdited'] == 0:
-                eachPost['isEdited'] = 'false'
+                eachPost['isEdited'] = False
             else:
-                eachPost['isEdited'] = 'true'
+                eachPost['isEdited'] = True
 
             if eachPost['isHighlighted'] == 0:
-                eachPost['isHighlighted'] = 'false'
+                eachPost['isHighlighted'] = False
             else:
-                eachPost['isHighlighted'] = 'true'
+                eachPost['isHighlighted'] = True
 
             if eachPost['isSpam'] == 0:
-                eachPost['isSpam'] = 'false'
+                eachPost['isSpam'] = False
             else:
-                eachPost['isSpam'] = 'true'
+                eachPost['isSpam'] = True
 
             eachPost['date'] = str(eachPost['date'])
 
@@ -271,14 +284,14 @@ def listPosts():
             if 'thread' in related and cursor.execute('''select * from Thread t where t.id={} '''.format(eachPost['thread'])):
                 responseInFor = dictfetchall(cursor)
                 if responseInFor[0]['isDeleted'] == 0:
-                    responseInFor[0]['isDeleted'] = 'false'
+                    responseInFor[0]['isDeleted'] = False
                 else:
-                    responseInFor[0]['isDeleted'] = 'true'
+                    responseInFor[0]['isDeleted'] = True
 
                 if responseInFor[0]['isClosed'] == 0:
-                    responseInFor[0]['isClosed'] = 'false'
+                    responseInFor[0]['isClosed'] = False
                 else:
-                    responseInFor[0]['isClosed'] = 'true'
+                    responseInFor[0]['isClosed'] = True
 
                 responseInFor[0]['date'] = str(responseInFor[0]['date'])
 
@@ -305,7 +318,7 @@ def listPosts():
 
         connection.close()
 
-        return json.dumps({
+        return flask.jsonify({
                 'code': 0,
                 'response': responseArrayToJson
             })
@@ -342,6 +355,11 @@ def list_users():
         trueSince = ''
 
     if Forum:
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
 
         try:
             cursor.execute(
@@ -382,9 +400,9 @@ def list_users():
                     true_threads.append(val)
 
             if responseInFor[0]['isAnonymous'] == 0:
-                responseInFor[0]['isAnonymous'] = 'false'
+                responseInFor[0]['isAnonymous'] = False
             else:
-                responseInFor[0]['isAnonymous'] = 'true'
+                responseInFor[0]['isAnonymous'] = True
 
             mainUsers.append({
                 'about': responseInFor[0]['about'],
@@ -400,7 +418,7 @@ def list_users():
 
         connection.close()
 
-        return json.dumps({
+        return flask.jsonify({
             'code': 0,
             'response': mainUsers
         })
@@ -438,6 +456,11 @@ def list_threads():
         trueSince = ''
 
     if forum:
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
 
         try:
             cursor.execute(
@@ -452,20 +475,20 @@ def list_threads():
         response = dictfetchall(cursor)
         for eachThread in response:
             if eachThread['isDeleted'] == 0:
-                eachThread['isDeleted'] = 'false'
+                eachThread['isDeleted'] = False
             else:
-                eachThread['isDeleted'] = 'true'
+                eachThread['isDeleted'] = True
 
             if eachThread['isClosed'] == 0:
-                eachThread['isClosed'] = 'false'
+                eachThread['isClosed'] = False
             else:
-                eachThread['isClosed'] = 'true'
+                eachThread['isClosed'] = True
 
             eachThread['date'] = str(eachThread['date'])
 
         connection.close()
 
-        return json.dumps({
+        return flask.jsonify({
             'code': 0,
             'response': response
         })
