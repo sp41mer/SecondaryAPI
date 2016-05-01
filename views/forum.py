@@ -112,32 +112,32 @@ def details():
         response = dictfetchall(cursor)
 
         try:
-         cursor.execute('''SELECT * FROM User WHERE email = '{}' '''.format(response[0]['user']))
-         if cursor.rowcount == 0:
-                return json.dumps({'code':5, 'response': 'User not found'})
+             cursor.execute('''SELECT * FROM User WHERE email = '{}' '''.format(response[0]['user']))
+             if cursor.rowcount == 0:
+                    return json.dumps({'code': 5, 'response': 'User not found'})
 
-         userDict = dictfetchall(cursor)
+             userDict = dictfetchall(cursor)
 
-         cursor.execute('''SELECT follower FROM Follow WHERE followee = '{}' '''.format(response[0]['user']))
-         followers = cursor.fetchall()
-         true_followers = []
-         for sublist in followers:
-            for val in sublist:
-                true_followers.append(val)
+             cursor.execute('''SELECT follower FROM Follow WHERE followee = '{}' '''.format(response[0]['user']))
+             followers = cursor.fetchall()
+             true_followers = []
+             for sublist in followers:
+                for val in sublist:
+                    true_followers.append(val)
 
-         cursor.execute('''SELECT followee FROM Follow WHERE follower = '{}' '''.format(response[0]['user']))
-         followees = cursor.fetchall()
-         true_followees = []
-         for sublist in followees:
-            for val in sublist:
-                true_followees.append(val)
+             cursor.execute('''SELECT followee FROM Follow WHERE follower = '{}' '''.format(response[0]['user']))
+             followees = cursor.fetchall()
+             true_followees = []
+             for sublist in followees:
+                for val in sublist:
+                    true_followees.append(val)
 
-         cursor.execute('''SELECT thread FROM Subscribe WHERE user = '{}' '''.format(response[0]['user']))
-         threads = cursor.fetchall()
-         true_threads = []
-         for sublist in threads:
-            for val in sublist:
-                true_threads.append(val)
+             cursor.execute('''SELECT thread FROM Subscribe WHERE user = '{}' '''.format(response[0]['user']))
+             threads = cursor.fetchall()
+             true_threads = []
+             for sublist in threads:
+                for val in sublist:
+                    true_threads.append(val)
 
 
         except (MySQLdb.Error, MySQLdb.Warning) as e:
@@ -145,8 +145,14 @@ def details():
                 return e
         connection.close()
 
-        if userDict[0]['username'] == 'none':
+        if userDict[0]['isAnonymous'] == 0:
+            response[0]['isAnonymous'] = False
+
+        else:
+            userDict[0]['isAnonymous'] = True
             userDict[0]['username'] = None
+            userDict[0]['about'] = None
+            userDict[0]['name'] = None
 
         return flask.jsonify({
             "code": 0,
@@ -184,7 +190,7 @@ def listPosts():
     related = request.args.getlist('related', type=str)
 
     if limit:
-        trueLimit = 'LIMIT '+limit
+        trueLimit = 'LIMIT '+str(limit)
     else:
         trueLimit = ''
 
@@ -195,7 +201,7 @@ def listPosts():
             })
 
     if since:
-        trueSince = ' and date >='+since
+        trueSince = " and date >='" + str(since) + "'"
     else:
         trueSince = ''
     if forum:
@@ -268,6 +274,14 @@ def listPosts():
                     for val in sublist:
                         true_threads.append(val)
 
+                if responseInFor[0]['isAnonymous'] == 0:
+                    responseInFor[0]['isAnonymous'] = False
+                else:
+                    responseInFor[0]['isAnonymous'] = True
+                    responseInFor[0]['username'] = None
+                    responseInFor[0]['about'] = None
+                    responseInFor[0]['name'] = None
+
                 eachPost['user'] = {
                     'about': responseInFor[0]['about'],
                     'email': responseInFor[0]['email'],
@@ -337,12 +351,12 @@ def list_users():
 
     Forum = request.args.get("forum", type=str, default=None)
 
-    since = request.args.get("since", type=str, default=None)
+    since = request.args.get("since_id", type=str, default=None)
     limit = request.args.get("limit", type=int, default=None)
     order = request.args.get("order", default='desc')
 
     if limit:
-        trueLimit = 'LIMIT '+limit
+        trueLimit = 'LIMIT '+str(limit)
     else:
         trueLimit = ''
 
@@ -353,7 +367,7 @@ def list_users():
             })
 
     if since:
-        trueSince = ' and date >='+since
+        trueSince = ' u.id >='+str(since)+' and '
     else:
         trueSince = ''
 
@@ -406,12 +420,15 @@ def list_users():
                 responseInFor[0]['isAnonymous'] = False
             else:
                 responseInFor[0]['isAnonymous'] = True
+                responseInFor[0]['username'] = None
+                responseInFor[0]['about'] = None
+                responseInFor[0]['name'] = None
 
             mainUsers.append({
                 'about': responseInFor[0]['about'],
                 'email': responseInFor[0]['email'],
                 'followers': true_followers,
-                'followees': true_followees,
+                'following': true_followees,
                 'subscriptions': true_threads,
                 'id': responseInFor[0]['id'],
                 'isAnonymous': responseInFor[0]['isAnonymous'],
@@ -443,7 +460,7 @@ def list_threads():
     related = request.args.getlist('related', type=str)
 
     if limit:
-        trueLimit = 'LIMIT '+limit
+        trueLimit = 'LIMIT '+str(limit)
     else:
         trueLimit = ''
 
@@ -454,7 +471,7 @@ def list_threads():
             })
 
     if since:
-        trueSince = ' and date >='+since
+        trueSince = "and date >='"+str(since)+"'"
     else:
         trueSince = ''
 
@@ -466,8 +483,8 @@ def list_threads():
         cursor = connection.cursor()
 
         try:
-            cursor.execute(
-                '''select * from Thread t where t.forum='{}' {} order by t.date {} {} '''.format(forum, trueSince, order, trueLimit))
+            cursor.execute('''select * from Thread t where t.forum='{}' {} order by t.date {} {} '''
+                           .format(forum, trueSince, order, trueLimit))
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
             return json.dumps({
@@ -476,6 +493,7 @@ def list_threads():
             })
 
         response = dictfetchall(cursor)
+
         for eachThread in response:
             if eachThread['isDeleted'] == 0:
                 eachThread['isDeleted'] = False
@@ -487,7 +505,57 @@ def list_threads():
             else:
                 eachThread['isClosed'] = True
 
+            if 'user' in related and cursor.execute(''' select * from User u where u.email='{}' '''.format(eachThread['user'])):
+                responseInFor = dictfetchall(cursor)
+                cursor.execute('''SELECT follower FROM Follow WHERE followee = '{}' '''.format(eachThread['user']))
+                followers = cursor.fetchall()
+                true_followers = []
+                for sublist in followers:
+                    for val in sublist:
+                        true_followers.append(val)
+
+                cursor.execute('''SELECT followee FROM Follow WHERE follower = '{}' '''.format(eachThread['user']))
+                followees = cursor.fetchall()
+                true_followees = []
+                for sublist in followees:
+                    for val in sublist:
+                        true_followees.append(val)
+
+                cursor.execute('''SELECT thread FROM Subscribe WHERE user = '{}' '''.format(eachThread['user']))
+                threads = cursor.fetchall()
+                true_threads = []
+                for sublist in threads:
+                    for val in sublist:
+                        true_threads.append(val)
+
+                if responseInFor[0]['isAnonymous'] == 0:
+                    responseInFor[0]['isAnonymous'] = False
+                else:
+                    responseInFor[0]['isAnonymous'] = True
+                    responseInFor[0]['username'] = None
+                    responseInFor[0]['about'] = None
+                    responseInFor[0]['name'] = None
+
+                eachThread['user'] = {
+                    'about': responseInFor[0]['about'],
+                    'email': responseInFor[0]['email'],
+                    'followers': true_followers,
+                    'following': true_followees,
+                    'subscriptions': true_threads,
+                    'id': responseInFor[0]['id'],
+                    'isAnonymous': responseInFor[0]['isAnonymous'],
+                    'name': responseInFor[0]['name'],
+                    'username': responseInFor[0]['username']
+                }
+
+            if 'forum' in related and cursor.execute('''select * from Forum f where f.short_name='{}' '''.format(eachThread['forum'])):
+                responseInFor = dictfetchall(cursor)
+                eachThread['forum'] = responseInFor[0]
+
+
             eachThread['date'] = str(eachThread['date'])
+
+
 
         connection.close()
 

@@ -6,6 +6,7 @@ from flask.ext.mysql import MySQL
 import MySQLdb
 import json
 import itertools
+import flask
 
 thread = Blueprint("thread", __name__)
 
@@ -526,6 +527,14 @@ def details():
                 for val in sublist:
                     true_threads.append(val)
 
+            if responseInFor[0]['isAnonymous'] == 0:
+                responseInFor[0]['isAnonymous'] = False
+            else:
+                responseInFor[0]['isAnonymous'] = True
+                responseInFor[0]['username'] = None
+                responseInFor[0]['about'] = None
+                responseInFor[0]['name'] = None
+
             response[0]['user'] = {
                 'about': responseInFor[0]['about'],
                 'email': responseInFor[0]['email'],
@@ -556,15 +565,19 @@ def details():
 
         connection.close()
 
-        return json.dumps({
+        return flask.jsonify({
                 'code': 0,
                 'response': {
                     "date": response[0]['date'],
+                    "dislikes": response[0]['dislikes'],
                     "forum": response[0]['forum'],
                     "id": response[0]['id'],
                     "isClosed": response[0]['isClosed'],
                     "isDeleted": response[0]['isDeleted'],
+                    "likes": response[0]['likes'],
                     "message": response[0]['message'],
+                    "points": response[0]['points'],
+                    "posts": response[0]['posts'],
                     "slug": response[0]['slug'],
                     "title": response[0]['title'],
                     "user": response[0]['user']
@@ -595,12 +608,12 @@ def list_threads():
             })
 
     if limit:
-        trueLimit = 'LIMIT '+limit
+        trueLimit = 'LIMIT '+str(limit)
     else:
         trueLimit = ''
 
     if since:
-        trueSince = ' and date >='+since
+        trueSince = " and date >='"+str(since)+"'"
     else:
         trueSince = ''
 
@@ -638,11 +651,15 @@ def list_threads():
             eachThread['date'] = str(eachThread['date'])
 
             responseArrayToJson.append({"date": eachThread['date'],
+                                        "dislikes": eachThread['dislikes'],
                                         "forum": eachThread['forum'],
                                         "id": eachThread['id'],
                                         "isClosed": eachThread['isClosed'],
                                         "isDeleted": eachThread['isDeleted'],
+                                        "likes": eachThread['likes'],
                                         "message": eachThread['message'],
+                                        "points": eachThread['points'],
+                                        "posts": eachThread['posts'],
                                         "slug": eachThread['slug'],
                                         "title": eachThread['title'],
                                         "user": eachThread['user']})

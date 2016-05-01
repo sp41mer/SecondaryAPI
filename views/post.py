@@ -54,6 +54,9 @@ def restore():
 def create():
     requestData = json.loads(request.data)
 
+    if requestData['forum'] == 'forumwithsufficientlylargename':
+        a = '1'
+
     if requestData['date'] and requestData['thread'] and requestData['message'] and requestData['user'] and requestData['forum']:
 
         #needs some refactoring( uebischno kakto:( )
@@ -420,12 +423,15 @@ def details():
 
         response[0]['date'] = str(response[0]['date'])
 
+
+
         connection.close()
 
         return json.dumps({
             'code': 0,
             'response': {
                 "date": response[0]['date'],
+                "dislikes": response[0]['dislikes'],
                 "forum": response[0]['forum'],
                 "id": response[0]['id'],
                 "isApproved": response[0]['isApproved'],
@@ -433,10 +439,13 @@ def details():
                 "isEdited": response[0]['isEdited'],
                 "isHighlighted": response[0]['isHighlighted'],
                 "isSpam": response[0]['isSpam'],
+                "likes": response[0]['likes'],
                 "message": response[0]['message'],
                 "parent": response[0]['parent'],
+                "points": response[0]["points"],
                 "thread": response[0]['thread'],
-                "user": response[0]['user']
+                "user": response[0]['user'],
+
             }
         })
     else:
@@ -457,7 +466,7 @@ def list_posts():
     order = request.args.get("order", default='desc')
 
     if limit:
-        trueLimit = 'LIMIT '+limit
+        trueLimit = 'LIMIT '+str(limit)
     else:
         trueLimit = ''
 
@@ -468,7 +477,7 @@ def list_posts():
             })
 
     if since:
-        trueSince = ' and date >='+since
+        trueSince = " and date >='"+str(since)+"'"
     else:
         trueSince = ''
 
@@ -563,6 +572,7 @@ def list_posts():
             })
 
         response = dictfetchall(cursor)
+
         responseArrayToJson = []
 
         connection.close()

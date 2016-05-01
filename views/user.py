@@ -648,7 +648,9 @@ def list_posts_users():
             })
         response = dictfetchall(cursor)
         responseArrayToJson = []
+
         connection.close()
+
         for eachPost in response:
             if eachPost['isApproved'] == 0:
                 eachPost['isApproved'] = False
