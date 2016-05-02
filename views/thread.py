@@ -1,6 +1,4 @@
 __author__ = 'sp41mer'
-# list
-# listPosts ENEMY!!!!!1!!!!11!!
 from flask import Blueprint, request
 from flask.ext.mysql import MySQL
 import MySQLdb
@@ -705,11 +703,15 @@ def list_threads():
             eachThread['date'] = str(eachThread['date'])
 
             responseArrayToJson.append({"date": eachThread['date'],
+                                        "dislikes": eachThread['dislikes'],
                                         "forum": eachThread['forum'],
                                         "id": eachThread['id'],
                                         "isClosed": eachThread['isClosed'],
                                         "isDeleted": eachThread['isDeleted'],
+                                        "likes": eachThread['likes'],
                                         "message": eachThread['message'],
+                                        "points": eachThread['points'],
+                                        "posts": eachThread['posts'],
                                         "slug": eachThread['slug'],
                                         "title": eachThread['title'],
                                         "user": eachThread['user']})
@@ -772,4 +774,119 @@ def list_threads():
         return json.dumps({
                 'code': 2,
                 'response': 'Error'
+            })
+
+
+@thread.route("/listPosts/", methods=['GET'])
+def list_posts_threads():
+
+    thread = request.args.get("thread", type=int, default=None)
+    sort = request.args.get("sort", type=str, default='flat')
+    order = request.args.get("order", default='desc')
+    since = request.args.get("since", type=str, default=None)
+    limit = request.args.get("limit", type=int, default=None)
+
+    if sort not in ['flat', 'tree', 'parent_tree']:
+        return json.dumps({
+            'code': 3,
+            'response': 'Error'
+            })
+
+    if limit:
+        trueLimit = 'LIMIT '+str(limit)
+    else:
+        trueLimit = ''
+
+    if sort == 'flat':
+        trueSort = 'order by p.date {} '.format(order) + trueLimit
+    elif sort == 'tree':
+        trueSort = ''' order by SUBSTRING(path,1,8) {}, path asc '''.format(order) + trueLimit
+    elif sort == 'parent_tree':
+        trueSort = '''order by path '''.format(order)
+
+    if order not in ['asc', 'desc']:
+        return json.dumps({
+            'code': 3,
+            'response': 'Error'
+            })
+
+    if since:
+        trueSince = " and date >='"+str(since)+"'"
+    else:
+        trueSince = ''
+
+    if thread:
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
+
+
+        try:
+            cursor.execute(''' select * from Post p where p.thread={} {} {} '''.format(thread, trueSince, trueSort))
+        except (MySQLdb.Error, MySQLdb.Warning):
+            connection.close()
+            return json.dumps({
+            'code': 1,
+            'response': 'Error'
+            })
+
+        response = dictfetchall(cursor)
+
+        for eachPost in response:
+
+            if eachPost['isApproved'] == 0:
+                eachPost['isApproved'] = False
+            else:
+                eachPost['isApproved'] = True
+
+            if eachPost['isDeleted'] == 0:
+                eachPost['isDeleted'] = False
+            else:
+                eachPost['isDeleted'] = True
+
+            if eachPost['isEdited'] == 0:
+                eachPost['isEdited'] = False
+            else:
+                eachPost['isEdited'] = True
+
+            if eachPost['isHighlighted'] == 0:
+                eachPost['isHighlighted'] = False
+            else:
+                eachPost['isHighlighted'] = True
+
+            if eachPost['isSpam'] == 0:
+                eachPost['isSpam'] = False
+            else:
+                eachPost['isSpam'] = True
+
+            eachPost['date'] = str(eachPost['date'])
+
+        if sort == 'parent_tree':
+            limit_counter = 0
+            end_counter = -1
+            for el in response:
+                if el['parent'] is None:
+                    end_counter += 1
+
+                    if end_counter == limit:
+                        break
+
+                    limit_counter += 1
+                else:
+                    limit_counter += 1
+
+            response = response[:limit_counter]
+
+        connection.close()
+
+        return json.dumps({
+            'code':0,
+            'response': response
+        })
+    else:
+        return json.dumps({
+            'code': 1,
+            'response': 'Error'
             })

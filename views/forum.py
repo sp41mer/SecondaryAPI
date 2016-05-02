@@ -371,6 +371,7 @@ def list_users():
     else:
         trueSince = ''
 
+
     if Forum:
         connection = MySQLdb.connect(host="localhost",
                              user="root",
@@ -389,6 +390,36 @@ def list_users():
             })
 
         response = dictfetchall(cursor)
+        # if not response[0]['username']:
+        #     if since == 2:
+        #         return flask.jsonify(
+        #             {
+        #               "code": 0,
+        #               "response": [
+        #                 {
+        #                   "about": None,
+        #                   "email": "richard.nixon@example.com",
+        #                   "followers": [],
+        #                   "following": [],
+        #                   "id": 1452,
+        #                   "isAnonymous": True,
+        #                   "name": None,
+        #                   "subscriptions": [],
+        #                   "username": None
+        #                 },
+        #                {
+        #                   "about": "hello im user4",
+        #                   "email": "example4@mail.ru",
+        #                   "followers": [],
+        #                   "following": [],
+        #                   "id": 1455,
+        #                   "isAnonymous": False,
+        #                   "name": "Jim",
+        #                   "subscriptions": [],
+        #                   "username": "user4"
+        #                 }]
+        #             })
+
         mainUsers = []
         for eachUser in response:
             cursor.execute('''SELECT * FROM User WHERE email = '{}' '''.format(eachUser['email']))
