@@ -56,29 +56,21 @@ def create():
 
     if requestData['date'] and requestData['thread'] and requestData['message'] and requestData['user'] and requestData['forum']:
 
-        if not requestData.get('isApproved', None):
-            requestData['isApproved'] = 0
-        else:
+        #needs some refactoring( uebischno kakto:( )
+
+        if requestData.get('isApproved', 0):
             requestData['isApproved'] = 1
 
-        if not requestData.get('isHighlighted', None):
-            requestData['isHighlighted'] = 0
-        else:
+        if requestData.get('isHighlighted', 0):
             requestData['isHighlighted'] = 1
 
-        if not requestData.get('isEdited', None):
-            requestData['isEdited'] = 0
-        else:
+        if requestData.get('isEdited', 0):
             requestData['isEdited'] = 1
 
-        if not requestData.get('isSpam', None):
-            requestData['isSpam'] = 0
-        else:
+        if requestData.get('isSpam', 0):
             requestData['isSpam'] = 1
 
-        if not requestData.get('isDeleted', None):
-            requestData['isDeleted'] = 0
-        else:
+        if requestData.get('isDeleted', 0):
             requestData['isDeleted'] = 1
 
         connection = MySQLdb.connect(host="localhost",
@@ -87,26 +79,27 @@ def create():
                              db="forum_db")
         cursor = connection.cursor()
 
-
         try:
-            if not requestData.get('parent', None):
-                cursor.execute(
-                    ''' insert into `Post` (`thread`, `user`, `forum`, `date`, `message`, `dislikes`, `likes`, `points`, `parent`, `isHighlighted`, `isApproved`, `isEdited`, `isSpam`, `isDeleted`) values ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', NULL, '{}', '{}', '{}', '{}', '{}') '''.format(
-                        requestData['thread'], requestData['user'], requestData['forum'], requestData['date'], requestData['message'], 0, 0, 0,
-                        requestData['isHighlighted'], requestData['isApproved'], requestData['isEdited'],
-                        requestData['isSpam'], requestData['isDeleted']))
-            else:
-                cursor.execute(
+            if requestData.get('parent', None):
+                 cursor.execute(
                     ''' insert into `Post` (`thread`, `user`, `forum`, `date`, `message`, `dislikes`, `likes`, `points`, `parent`, `isHighlighted`, `isApproved`, `isEdited`, `isSpam`, `isDeleted`) values ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}') '''.format(
                         requestData['thread'], requestData['user'], requestData['forum'], requestData['date'], requestData['message'], 0, 0, 0,
-                        requestData['parent'], requestData['isHighlighted'], requestData['isApproved'], requestData['isEdited'],
-                        requestData['isSpam'], requestData['isDeleted']))
+                        requestData['parent'], requestData.get('isHighlighted', 0), requestData.get('isApproved', 0), requestData.get('isEdited', 0),
+                        requestData.get('isSpam', 0),  requestData.get('isDeleted', 0)))
+
+            else:
+                cursor.execute(''' insert into `Post` (`thread`, `user`, `forum`, `date`, `message`, `dislikes`, `likes`, `points`, `parent`, `isHighlighted`, `isApproved`, `isEdited`, `isSpam`, `isDeleted`) values ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', NULL, '{}', '{}', '{}', '{}', '{}') '''.format(
+                        requestData['thread'], requestData['user'], requestData['forum'], requestData['date'], requestData['message'], 0, 0, 0,
+                        requestData.get('isHighlighted', 0), requestData.get('isApproved', 0), requestData.get('isEdited', 0),
+                        requestData.get('isSpam', 0),  requestData.get('isDeleted', 0)))
+
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
             return json.dumps({
             'code': 4,
-            'response': 'Not Found'
+            'response': 'Error'
             })
+
         try:
             cursor.execute(''' select * from Post p where p.date='{}' '''.format(requestData['date']))
         except (MySQLdb.Error, MySQLdb.Warning):
