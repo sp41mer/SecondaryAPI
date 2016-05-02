@@ -255,7 +255,7 @@ def remove():
         cursor = connection.cursor()
 
         try:
-            cursor.execute(''' select count(*) from post where thread={} and isDeleted != 0 '''.format(requestData['thread']))
+            cursor.execute(''' select count(*) from Post where thread={} and isDeleted != 0 '''.format(requestData['thread']))
             connection.commit()
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
@@ -307,7 +307,7 @@ def restore():
         cursor = connection.cursor()
 
         try:
-            cursor.execute(''' select count(*) from post where thread={} and isDeleted != 0 '''.format(requestData['thread']))
+            cursor.execute(''' select count(*) from Post where thread={} and isDeleted != 0 '''.format(requestData['thread']))
             connection.commit()
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
