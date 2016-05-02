@@ -27,7 +27,7 @@ def create():
         request_data['isAnonymous'] = 0
         anon = False
 
-    if (request_data.get('username',None) and request_data.get('about',None) and request_data.get('name',None) and request_data.get('email', None)) or anon:
+    if (request_data.get('username',None) and request_data.get('about',None) and request_data.get('name',None) and request_data.get('email', None)):
 
         connection = MySQLdb.connect(host="localhost",
                              user="root",
@@ -40,6 +40,50 @@ def create():
                     values ('{}','{}','{}','{}','{}') '''.format(request_data['username'],
                                                                  request_data['email'], request_data['about'],
                                                                  request_data['name'], request_data['isAnonymous']))
+            result_create = cursor.fetchall()
+            connection.commit()
+
+        except (MySQLdb.Error, MySQLdb.Warning) as e:
+            connection.close()
+            return json.dumps({
+            'code': 5,
+            'response': 'SQL fail'
+        })
+
+        try:
+            cursor.execute('''select * from User where email ='{}' '''.format(request_data['email']))
+            selected_id = cursor._rows[0][0]
+            connection.close()
+
+        except (MySQLdb.Error, MySQLdb.Warning) as e:
+            connection.close()
+            return json.dumps({
+            'code': 4,
+            'response': 'SQL fail'
+        })
+
+
+        return json.dumps({
+        'code': 0,
+        'response': {
+            "about": request_data['about'],
+            "email": request_data['email'],
+            "id": selected_id,
+            "isAnonymous": anon,
+            "name": request_data['name'],
+            "username": request_data['username']
+        }
+        })
+    elif anon:
+        connection = MySQLdb.connect(host="localhost",
+                             user="root",
+                             passwd="root",
+                             db="forum_db")
+        cursor = connection.cursor()
+
+        try:
+            cursor.execute('''insert into `User` (`email`,`isAnonymous`)
+                    values ('{}','{}') '''.format(request_data['email'], request_data['isAnonymous']))
             result_create = cursor.fetchall()
             connection.commit()
 
