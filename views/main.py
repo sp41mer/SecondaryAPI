@@ -73,10 +73,10 @@ def get_status():
     return json.dumps({
             'code': 1,
             'response': {
-                "user": response[0]['user'],
-                "thread": response[0]['thread'],
-                "forum": response[0]['forum'],
-                "post": response[0]['post']
+                "user": response['user'],
+                "thread": response['thread'],
+                "forum": response['forum'],
+                "post": response['post']
             }
     })
 
