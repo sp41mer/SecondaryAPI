@@ -46,7 +46,7 @@ def delete_all():
 @main.route("/status/", methods=['GET'])
 def get_status():
 
-    list = ['user', 'forum', 'thread', 'post']
+    list = ['User', 'Forum', 'Thread', 'Post']
     count_dict = {}
     connection = MySQLdb.connect(host="localhost",
                              user="root",
