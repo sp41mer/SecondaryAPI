@@ -292,7 +292,7 @@ def updateProfile():
         cursor = connection.cursor()
 
         try:
-            cursor.execute(''' update User u set name='{}', about='{}' where u.email='{}' '''.format(request_data['name'], request_data['about'], request_data['user']))
+            cursor.execute(''' update User set name='{}', about='{}' where User.email='{}' '''.format(request_data['name'], request_data['about'], request_data['user']))
             connection.commit()
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
@@ -470,7 +470,7 @@ def listFollowers():
         since_id = request.args.get('since_id', type=str, default=None)
 
         if since_id:
-            trueSinceId = 'and u.id >='+str(since_id)
+            trueSinceId = 'and User.id >='+str(since_id)
         else:
             trueSinceId = ''
 
@@ -481,7 +481,7 @@ def listFollowers():
         cursor = connection.cursor()
 
         try:
-            cursor.execute(''' select * from Follow f join User u on f.follower = u.email where f.followee='{}' and u.id {} order by u.name {} {} '''.format(requestData, trueSinceId, order, trueLimit))
+            cursor.execute(''' select * from Follow join User on Follow.follower = User.email where Follow.followee='{}' and User.id {} order by User.name {} {} '''.format(requestData, trueSinceId, order, trueLimit))
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
             return json.dumps({
@@ -571,7 +571,7 @@ def list_following():
         since_id = request.args.get('since_id', type=str, default=None)
 
         if since_id:
-            trueSinceId = 'and u.id >='+str(since_id)
+            trueSinceId = 'and User.id >='+str(since_id)
         else:
             trueSinceId = ''
 
@@ -582,7 +582,7 @@ def list_following():
         cursor = connection.cursor()
 
         try:
-            cursor.execute(''' select * from Follow f join User u on f.followee = u.email where f.follower='{}' and u.id {} order by u.name {} {} '''.format(requestData, trueSinceId, order, trueLimit))
+            cursor.execute(''' select * from Follow join User on Follow.followee = User.email where Follow.follower='{}' and User.id {} order by User.name {} {} '''.format(requestData, trueSinceId, order, trueLimit))
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
             return json.dumps({
@@ -672,7 +672,7 @@ def list_posts_users():
         since_id = request.args.get('since_id', type=str, default=None)
 
         if since_id:
-            trueSinceId = ' and u.id >='+str(since_id)
+            trueSinceId = ' and User.id >='+str(since_id)
         else:
             trueSinceId = ''
 
@@ -683,7 +683,7 @@ def list_posts_users():
         cursor = connection.cursor()
 
         try:
-            cursor.execute(''' select * from Post p where p.user = '{}' {} order by p.date {} {} '''.format(requestData, trueSinceId , order, trueLimit))
+            cursor.execute(''' select * from Post where Post.user = '{}' {} order by Post.date {} {} '''.format(requestData, trueSinceId , order, trueLimit))
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
             return json.dumps({

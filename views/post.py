@@ -25,7 +25,7 @@ def restore():
         cursor = connection.cursor()
 
         try:
-            cursor.execute(''' update Post p set p.isDeleted=0 where p.id={} '''.format(requestData['post']))
+            cursor.execute(''' update Post set Post.isDeleted=0 where Post.id={} '''.format(requestData['post']))
             cursor.execute(''' select thread from Post where id={} '''.format(requestData['post']))
             targetId = cursor.fetchall()[0][0]
             cursor.execute(''' update Thread set posts=posts+1 where id={} '''.format(targetId))
@@ -101,7 +101,7 @@ def create():
             })
 
         try:
-            cursor.execute(''' select * from Post p where p.date='{}' '''.format(requestData['date']))
+            cursor.execute(''' select * from Post where Post.date='{}' '''.format(requestData['date']))
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
             return json.dumps({
@@ -176,7 +176,7 @@ def remove():
         cursor = connection.cursor()
 
         try:
-            cursor.execute(''' update Post p set p.isDeleted=1 where p.id={} '''.format(requestData['post']))
+            cursor.execute(''' update Post set Post.isDeleted=1 where Post.id={} '''.format(requestData['post']))
             cursor.execute(''' select thread from Post where id={} '''.format(requestData['post']))
             id_thread = cursor.fetchall()[0][0]
             cursor.execute(''' update Thread set posts=posts-1 where id={} '''.format(id_thread))
@@ -215,8 +215,8 @@ def update():
         cursor = connection.cursor()
 
         try:
-            cursor.execute(''' update Post p set p.message='{}' where p.id={} '''.format(requestData['message'], requestData['post']))
-            cursor.execute(''' select * from Post p where p.id={} '''.format(requestData['post']))
+            cursor.execute(''' update Post set Post.message='{}' where Post.id={} '''.format(requestData['message'], requestData['post']))
+            cursor.execute(''' select * from Post where Post.id={} '''.format(requestData['post']))
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
             return json.dumps({
@@ -297,12 +297,12 @@ def vote():
         cursor = connection.cursor()
         try:
             if requestData['vote'] == -1:
-                cursor.execute(''' update Post p set dislikes=dislikes+1, points=points-1 where p.id={} '''.format(requestData['post']))
+                cursor.execute(''' update Post set dislikes=dislikes+1, points=points-1 where Post.id={} '''.format(requestData['post']))
             else:
-                cursor.execute(''' update Post p set likes=likes+1, points=points+1 where p.id={} '''.format(requestData['post']))
+                cursor.execute(''' update Post set likes=likes+1, points=points+1 where Post.id={} '''.format(requestData['post']))
             connection.commit()
 
-            cursor.execute(''' select * from Post p where p.id={} '''.format(requestData['post']))
+            cursor.execute(''' select * from Post where Post.id={} '''.format(requestData['post']))
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
             return json.dumps({
@@ -378,7 +378,7 @@ def details():
         cursor = connection.cursor()
 
         try:
-            cursor.execute(''' select * from Post p where p.id='{}' '''.format(post))
+            cursor.execute(''' select * from Post where Post.id='{}' '''.format(post))
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
             return json.dumps({
@@ -488,7 +488,7 @@ def list_posts():
         cursor = connection.cursor()
 
         try:
-            cursor.execute(''' select * from Post p where p.thread='{}' {} order by p.date {} {} '''.format(thread, trueSince, order, trueLimit))
+            cursor.execute(''' select * from Post where Post.thread='{}' {} order by Post.date {} {} '''.format(thread, trueSince, order, trueLimit))
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
             return json.dumps({
@@ -560,7 +560,7 @@ def list_posts():
         cursor = connection.cursor()
 
         try:
-            cursor.execute(''' select * from Post p where p.forum='{}' {} order by p.date {} {} '''.format(forum, trueSince, order, trueLimit))
+            cursor.execute(''' select * from Post where Post.forum='{}' {} order by Post.date {} {} '''.format(forum, trueSince, order, trueLimit))
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
             return json.dumps({
@@ -632,7 +632,7 @@ def list_posts():
         cursor = connection.cursor()
 
         try:
-            cursor.execute(''' select * from Post p where p.thread='{}' and p.forum='{}' {} order by t.date {} {} '''.format(thread, forum, trueSince, order, trueLimit))
+            cursor.execute(''' select * from Post where Post.thread='{}' and Post.forum='{}' {} order by Thread.date {} {} '''.format(thread, forum, trueSince, order, trueLimit))
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
             return json.dumps({

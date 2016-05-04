@@ -50,7 +50,7 @@ def create():
 
         try:
             cursor.execute(
-                '''select * from Forum f where f.short_name='{}' '''.format(requestData['short_name']))
+                '''select * from Forum where Forum.short_name='{}' '''.format(requestData['short_name']))
             connection.commit()
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
@@ -94,7 +94,7 @@ def details():
 
         try:
             cursor.execute(
-                '''select * from Forum f where f.short_name='{}' '''.format(forum))
+                '''select * from Forum where Forum.short_name='{}' '''.format(forum))
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
             return json.dumps({
@@ -212,7 +212,7 @@ def listPosts():
         cursor = connection.cursor()
         try:
             cursor.execute(
-                '''select * from Post p where p.forum='{}' {} order by p.date {} {} '''.format(forum, trueSince, order, trueLimit))
+                '''select * from Post where Post.forum='{}' {} order by Post.date {} {} '''.format(forum, trueSince, order, trueLimit))
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
             return json.dumps({
@@ -251,7 +251,7 @@ def listPosts():
 
             eachPost['date'] = str(eachPost['date'])
 
-            if 'user' in related and cursor.execute(''' select * from User u where u.email='{}' '''.format(eachPost['user'])):
+            if 'user' in related and cursor.execute(''' select * from User where User.email='{}' '''.format(eachPost['user'])):
                 responseInFor = dictfetchall(cursor)
                 cursor.execute('''SELECT follower FROM Follow WHERE followee = '{}' '''.format(eachPost['user']))
                 followers = cursor.fetchall()
@@ -294,11 +294,11 @@ def listPosts():
                     'username': responseInFor[0]['username']
                 }
 
-            if 'forum' in related and cursor.execute('''select * from Forum f where f.short_name='{}' '''.format(eachPost['forum'])):
+            if 'forum' in related and cursor.execute('''select * from Forum where Forum.short_name='{}' '''.format(eachPost['forum'])):
                 responseInFor = dictfetchall(cursor)
                 eachPost['forum'] = responseInFor[0]
 
-            if 'thread' in related and cursor.execute('''select * from Thread t where t.id={} '''.format(eachPost['thread'])):
+            if 'thread' in related and cursor.execute('''select * from Thread where Thread.id={} '''.format(eachPost['thread'])):
                 responseInFor = dictfetchall(cursor)
                 if responseInFor[0]['isDeleted'] == 0:
                     responseInFor[0]['isDeleted'] = False
@@ -367,7 +367,7 @@ def list_users():
             })
 
     if since:
-        trueSince = ' u.id >='+str(since)+' and '
+        trueSince = ' User.id >='+str(since)+' and '
     else:
         trueSince = ''
 
@@ -381,7 +381,7 @@ def list_users():
 
         try:
             cursor.execute(
-                '''select * from User u where {} u.email in ( select distinct p.user from Post p where p.forum='{}' ) order by u.name {} {} '''.format(trueSince, Forum, order, trueLimit))
+                '''select * from User where {} User.email in ( select distinct Post.user from Post where Post.forum='{}' ) order by User.name {} {} '''.format(trueSince, Forum, order, trueLimit))
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
             return json.dumps({
@@ -514,7 +514,7 @@ def list_threads():
         cursor = connection.cursor()
 
         try:
-            cursor.execute('''select * from Thread t where t.forum='{}' {} order by t.date {} {} '''
+            cursor.execute('''select * from Thread where Thread.forum='{}' {} order by Thread.date {} {} '''
                            .format(forum, trueSince, order, trueLimit))
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
@@ -536,7 +536,7 @@ def list_threads():
             else:
                 eachThread['isClosed'] = True
 
-            if 'user' in related and cursor.execute(''' select * from User u where u.email='{}' '''.format(eachThread['user'])):
+            if 'user' in related and cursor.execute(''' select * from User where User.email='{}' '''.format(eachThread['user'])):
                 responseInFor = dictfetchall(cursor)
                 cursor.execute('''SELECT follower FROM Follow WHERE followee = '{}' '''.format(eachThread['user']))
                 followers = cursor.fetchall()
@@ -579,7 +579,7 @@ def list_threads():
                     'username': responseInFor[0]['username']
                 }
 
-            if 'forum' in related and cursor.execute('''select * from Forum f where f.short_name='{}' '''.format(eachThread['forum'])):
+            if 'forum' in related and cursor.execute('''select * from Forum where Forum.short_name='{}' '''.format(eachThread['forum'])):
                 responseInFor = dictfetchall(cursor)
                 eachThread['forum'] = responseInFor[0]
 

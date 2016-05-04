@@ -29,7 +29,7 @@ def close():
         cursor = connection.cursor()
 
         try:
-            cursor.execute(''' update Thread t set isClosed=1 where t.id={} '''.format(requestData['thread']))
+            cursor.execute(''' update Thread set isClosed=1 where Thread.id={} '''.format(requestData['thread']))
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
             return json.dumps({
@@ -64,7 +64,7 @@ def open():
         cursor = connection.cursor()
 
         try:
-            cursor.execute(''' update Thread t set isClosed=0 where t.id={} '''.format(requestData['thread']))
+            cursor.execute(''' update Thread set isClosed=0 where Thread.id={} '''.format(requestData['thread']))
             connection.commit()
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
@@ -198,7 +198,7 @@ def create():
             })
 
         try:
-            cursor.execute(''' select * from Thread t where t.date='{}' '''.format(requestData['date']))
+            cursor.execute(''' select * from Thread where Thread.date='{}' '''.format(requestData['date']))
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
             return json.dumps({
@@ -360,9 +360,9 @@ def vote():
         cursor = connection.cursor()
         try:
             if requestData['vote'] == -1:
-                cursor.execute(''' update Thread t set dislikes=dislikes+1, points=points-1 where t.id={} '''.format(requestData['thread']))
+                cursor.execute(''' update Thread set dislikes=dislikes+1, points=points-1 where Thread.id={} '''.format(requestData['thread']))
             elif requestData['vote'] == 1:
-                cursor.execute(''' update Thread t set likes=likes+1, points=points+1 where t.id={} '''.format(requestData['thread']))
+                cursor.execute(''' update Thread set likes=likes+1, points=points+1 where Thread.id={} '''.format(requestData['thread']))
             else:
                 return json.dumps({
                 'code': 3,
@@ -371,7 +371,7 @@ def vote():
 
             connection.commit()
 
-            cursor.execute(''' select * from Thread t where t.id={} '''.format(requestData['thread']))
+            cursor.execute(''' select * from Thread where Thread.id={} '''.format(requestData['thread']))
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
             return json.dumps({
@@ -426,8 +426,8 @@ def update():
         cursor = connection.cursor()
 
         try:
-            cursor.execute(''' update Thread t set t.message='{}', t.slug='{}' where t.id={} '''.format(requestData['message'], requestData['slug'], requestData['thread']))
-            cursor.execute(''' select * from Thread t where t.id={} '''.format(requestData['thread']))
+            cursor.execute(''' update Thread set Thread.message='{}', Thread.slug='{}' where Thread.id={} '''.format(requestData['message'], requestData['slug'], requestData['thread']))
+            cursor.execute(''' select * from Thread where Thread.id={} '''.format(requestData['thread']))
             connection.commit()
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
@@ -491,7 +491,7 @@ def details():
         cursor = connection.cursor()
 
         try:
-            cursor.execute(''' select * from Thread t where t.id='{}' '''.format(thread_id))
+            cursor.execute(''' select * from Thread where Thread.id='{}' '''.format(thread_id))
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
             return json.dumps({
@@ -502,7 +502,7 @@ def details():
         response = dictfetchall(cursor)
 
 
-        if 'user' in related and cursor.execute(''' select * from User u where u.email='{}' '''.format(response[0]['user'])):
+        if 'user' in related and cursor.execute(''' select * from User where User.email='{}' '''.format(response[0]['user'])):
             responseInFor = dictfetchall(cursor)
             cursor.execute('''SELECT follower FROM Follow WHERE followee = '{}' '''.format(response[0]['user']))
             followers = cursor.fetchall()
@@ -545,7 +545,7 @@ def details():
                 'username': responseInFor[0]['username']
             }
 
-        if 'forum' in related and cursor.execute('''select * from Forum f where f.short_name='{}' '''.format(response[0]['forum'])):
+        if 'forum' in related and cursor.execute('''select * from Forum where Forum.short_name='{}' '''.format(response[0]['forum'])):
             responseInFor = dictfetchall(cursor)
             response[0]['forum'] = responseInFor[0]
 
@@ -623,7 +623,7 @@ def list_threads():
         cursor = connection.cursor()
 
         try:
-            cursor.execute(''' select * from Thread t where t.user='{}' {} order by t.date {} {} '''.format(user_email, trueSince, order, trueLimit))
+            cursor.execute(''' select * from Thread where Thread.user='{}' {} order by Thread.date {} {} '''.format(user_email, trueSince, order, trueLimit))
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
             return json.dumps({
@@ -675,7 +675,7 @@ def list_threads():
         cursor = connection.cursor()
 
         try:
-            cursor.execute(''' select * from Thread t where t.forum='{}' {} order by t.date {} {} '''.format(forum_name, trueSince, order, trueLimit))
+            cursor.execute(''' select * from Thread where Thread.forum='{}' {} order by Thread.date {} {} '''.format(forum_name, trueSince, order, trueLimit))
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
             return json.dumps({
@@ -729,7 +729,7 @@ def list_threads():
         cursor = connection.cursor()
 
         try:
-            cursor.execute(''' select * from Thread t where t.user='{}' and t.forum='{}' {} order by t.date {} {} '''.format(user_email, forum_name, trueSince, order, trueLimit))
+            cursor.execute(''' select * from Thread where Thread.user='{}' and Thread.forum='{}' {} order by Thread.date {} {} '''.format(user_email, forum_name, trueSince, order, trueLimit))
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
             return json.dumps({
@@ -798,7 +798,7 @@ def list_posts_threads():
         trueLimit = ''
 
     if sort == 'flat':
-        trueSort = 'order by p.date {} '.format(order) + trueLimit
+        trueSort = 'order by Post.date {} '.format(order) + trueLimit
     elif sort == 'tree':
         trueSort = ''' order by SUBSTRING(path,1,8) {}, path asc '''.format(order) + trueLimit
     elif sort == 'parent_tree':
@@ -824,7 +824,7 @@ def list_posts_threads():
 
 
         try:
-            cursor.execute(''' select * from Post p where p.thread={} {} {} '''.format(thread, trueSince, trueSort))
+            cursor.execute(''' select * from Post where Post.thread={} {} {} '''.format(thread, trueSince, trueSort))
         except (MySQLdb.Error, MySQLdb.Warning):
             connection.close()
             return json.dumps({
